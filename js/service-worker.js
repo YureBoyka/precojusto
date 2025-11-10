@@ -1,25 +1,32 @@
 // service-worker.js
-const CACHE_NAME = 'precomercado-v3'; // bump version when changing strategy
+// Versão de cache atualizada para incluir novos ícones PWA
+const CACHE_NAME = 'precomercado-v4'; // bump version when changing strategy or assets
 const APP_SHELL = [
     '/',
     '/index.html',
     '/produto.html',
     '/admin.html',
     '/manifest.json',
+    '/offline.html',
     '/css/style.css',
     '/css/admin.css',
     '/js/script.js',
     '/js/firebase-loader.js',
-    '/js/firebase-init.js'
+    '/js/firebase-init.js',
+    // Ícones essenciais para instalação / home screen
+    '/images/icons/maskable-icon.svg',
+    '/images/cabecalho.png'
 ];
 
 // Runtime cache patterns (fonts, images, external libs)
 const RUNTIME_CACHE = 'runtime-precomercado';
 
 self.addEventListener('install', (event) => {
-        event.waitUntil(
-            caches.open(CACHE_NAME).then(cache => cache.addAll([...APP_SHELL, '/offline.html'])).then(() => self.skipWaiting())
-        );
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(APP_SHELL))
+            .then(() => self.skipWaiting())
+    );
 });
 
 self.addEventListener('activate', (event) => {
