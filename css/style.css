@@ -1794,16 +1794,33 @@ body.modal-open {
 .compare-action-notice.info { background:linear-gradient(180deg,#eff6ff,#dbeafe); color:#1e3a8a; border-top:1px solid #bfdbfe; border-bottom:1px solid #bfdbfe; }
 .compare-action-notice.error { background:linear-gradient(180deg,#fef2f2,#fee2e2); color:#7f1d1d; border-top:1px solid #fecaca; border-bottom:1px solid #fecaca; }
 
-/* Selected states for fav/cart inside compare views */
-.compare-highlight-card .fav-btn.fav-active i,
-.compare-linear-item .fav-btn.fav-active i,
-.compare-card .fav-btn.fav-active i { color:#dc2626 !important; }
-.compare-highlight-card .cart-btn.in-cart,
-.compare-linear-item .cart-btn.in-cart,
-.compare-card .cart-btn.in-cart { background:#059669 !important; color:#fff !important; border:1px solid #047857 !important; }
-.compare-highlight-card .cart-btn.in-cart i,
-.compare-linear-item .cart-btn.in-cart i,
-.compare-card .cart-btn.in-cart i { color:#fff !important; }
+/* Estados padrão e ativos dos botões de favorito/carrinho na comparação (mobile + desktop) */
+/* Padrão: cinza neutro */
+.compare-highlight-card .fav-btn,
+.compare-linear-item .fav-btn,
+.compare-card .fav-btn,
+.compare-highlight-card .cart-btn,
+.compare-linear-item .cart-btn,
+.compare-card .cart-btn { background:#e5e7eb; color:#374151; border:1px solid #d1d5db; transition:background .18s ease, color .18s ease, border-color .18s ease; }
+.compare-highlight-card .fav-btn i,
+.compare-linear-item .fav-btn i,
+.compare-card .fav-btn i,
+.compare-highlight-card .cart-btn i,
+.compare-linear-item .cart-btn i,
+.compare-card .cart-btn i { color:#374151; }
+/* Hover leve quando não selecionado */
+.compare-highlight-card .fav-btn:not(.fav-active):hover,
+.compare-linear-item .fav-btn:not(.fav-active):hover,
+.compare-card .fav-btn:not(.fav-active):hover,
+.compare-highlight-card .cart-btn:not(.in-cart):hover,
+.compare-linear-item .cart-btn:not(.in-cart):hover,
+.compare-card .cart-btn:not(.in-cart):hover { background:#d1d5db; }
+/* Ativo: verde */
+.fav-btn.fav-active,
+.cart-btn.in-cart { background:#059669 !important; color:#fff !important; border-color:#047857 !important; }
+/* Ícones ativos: coração vermelho, carrinho azul */
+.fav-btn.fav-active i { color:#ef4444 !important; }
+.cart-btn.in-cart i { color:#1d4ed8 !important; }
 .compare-page-content { overflow:auto; padding:12px; height: calc(100vh - 56px); }
 
 /* Visual separation and group headers for mobile compare list */
