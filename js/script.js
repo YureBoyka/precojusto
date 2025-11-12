@@ -2097,7 +2097,7 @@ window.addEventListener('load', () => {
     } catch (err) {
         console.warn('ServiceWorker não suportado ou erro:', err);
     }
-});
+
 
 // Listener fora do DOMContentLoaded para não perder evento precoce
 window.addEventListener('productsLoaded', (event) => {
@@ -4225,5 +4225,7 @@ window.addEventListener('productsLoaded', (event) => {
     } catch (e) {
         console.warn('Falha ao processar productsLoaded externo:', e);
     }
-}
 });
+}
+// end of removed old variant
+}
