@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged, signInWithEmailAndPassword, db, addDoc, collection, getDocs, doc, deleteDoc, query, where } from './firebase-init.js';
+import { auth, onAuthStateChanged, signInWithEmailAndPassword, signOut, db, addDoc, collection, getDocs, doc, deleteDoc, query, where } from './firebase-init.js';
 
 // Classe para gerenciar busca por código de barras
 class BarcodeProductSearch {
@@ -2256,6 +2256,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminPanel = document.getElementById('admin-panel');
     const loginForm = document.getElementById('admin-login-form');
     const loginError = document.getElementById('login-error');
+    const logoutBtn = document.getElementById('admin-logout-btn');
 
     async function initAdminPanel() {
         console.log("initAdminPanel called");
@@ -2326,6 +2327,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 loginError.textContent = userMessage;
                 loginError.style.display = 'block';
+            }
+        });
+    }
+    // Logout handler
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                logoutBtn.disabled = true;
+                // Limpa flags legadas
+                try { localStorage.removeItem('adminLogado'); } catch (_) {}
+                try { localStorage.removeItem('isAuthenticated'); } catch (_) {}
+                try { localStorage.removeItem('adminEmail'); } catch (_) {}
+                await signOut(auth);
+                // onAuthStateChanged cuidará de exibir a tela de login
+            } catch (err) {
+                console.error('Erro ao sair:', err);
+                alert('Não foi possível terminar a sessão agora. Tente novamente.');
+            } finally {
+                logoutBtn.disabled = false;
             }
         });
     }
