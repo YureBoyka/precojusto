@@ -1,9 +1,101 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #e9ecef;
+    /* Soft gradient background for a modern look on the login screen */
+    background: radial-gradient(1200px 600px at 10% -10%, #e8eeff 0%, transparent 60%),
+                radial-gradient(800px 500px at 110% 10%, #eefbf3 0%, transparent 60%),
+                linear-gradient(180deg, #f6f8fb 0%, #eef1f6 100%);
     margin: 0;
     padding: 0;
     color: #333;
+}
+
+/* ===== Admin Login (beautiful version) ===== */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.login-form {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 16px;
+    padding: 28px 26px;
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.08), 0 2px 10px rgba(2, 6, 23, 0.04);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    animation: fadeIn 320ms ease;
+}
+
+.login-form h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px 0;
+    font-size: 1.6rem;
+    color: #111827;
+}
+
+.login-form h1 i { color: #2563eb; }
+
+.login-form .form-group { margin-bottom: 14px; }
+
+.login-form label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 6px 4px;
+    font-size: 0.95rem;
+}
+
+.login-form input[type="email"],
+.login-form input[type="password"] {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    padding: 12px 14px;
+    font-size: 1rem;
+    outline: none;
+    transition: box-shadow .2s ease, border-color .2s ease, transform .08s ease;
+    box-sizing: border-box;
+}
+
+.login-form input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.login-form .btn-submit {
+    margin-top: 4px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    border-radius: 12px;
+    font-weight: 700;
+    padding: 12px 16px;
+    box-shadow: 0 6px 16px rgba(29, 78, 216, 0.25);
+}
+
+.login-form .btn-submit:hover { filter: brightness(1.03); }
+.login-form .btn-submit:active { transform: translateY(1px); }
+
+#login-error {
+    background: #fde8e8;
+    border: 1px solid #f5c2c7;
+    color: #b91c1c;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-top: 8px;
+}
+
+/* Small helper spacing on mobile */
+@media (max-width: 480px) {
+    .login-form { padding: 22px 18px; border-radius: 14px; }
 }
 
 /* Modal lock classes */
