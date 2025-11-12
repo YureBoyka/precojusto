@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // ============ DECLARE initializeAppData FIRST ============
 function initializeAppData() {
     console.log("Initializing app data...");
@@ -2111,7 +2110,9 @@ window.addEventListener('productsLoaded', (event) => {
     } catch (e) {
         console.warn('Falha ao processar productsLoaded externo:', e);
     }
-=======
+});
+/* MERGE CONFLICT OLD VARIANT (kept for reference) */
+function __OLD_MERGE_VARIANT_DO_NOT_USE__() {
 // ============ DECLARE initializeAppData FIRST ============
 function initializeAppData() {
     console.log("Initializing app data...");
@@ -4224,5 +4225,5 @@ window.addEventListener('productsLoaded', (event) => {
     } catch (e) {
         console.warn('Falha ao processar productsLoaded externo:', e);
     }
->>>>>>> 2b67ac1 (feat(scanner): integrate html5-qrcode, add scan beep, and auto-open compare by barcode)
+}
 });
