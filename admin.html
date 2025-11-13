@@ -6,6 +6,8 @@
     <title>Painel de Administração - Preço Certo</title>
     <link rel="stylesheet" href="css/style-admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Quagga library DEVE ser carregado ANTES do barcode-scanner.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
 <body>
     <!-- Tela de carregamento de autenticação para evitar flicker da tela de login -->
@@ -410,7 +412,7 @@
     </script>
     
     <!-- Usar o mesmo scanner que funciona no index.html -->
-    <script src="js/barcode-scanner.js?v=127785a"></script>
+    <script src="js/barcode-scanner.js?v=fix-quagga-load"></script>
     <script>
         // Adaptar scanner para preencher campo de código de barras do admin
         document.addEventListener('DOMContentLoaded', function() {
@@ -600,8 +602,5 @@
             background: #545b62;
         }
     </style>
-    
-    <!-- Add Quagga library for barcode scanning -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </body>
 </html>
