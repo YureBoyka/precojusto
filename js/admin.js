@@ -2293,13 +2293,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 showAdmin();
             } else {
                 // fallback: aceitar login prévio salvo por login.html, mas migrar para este fluxo
-                const legacyLogged = localStorage.getItem('adminLogado') === 'true' || localStorage.getItem('isAuthenticated') === 'true';
+                const legacyLogged = (
+                    localStorage.getItem('adminLogado') === 'true' ||
+                    localStorage.getItem('isAuthenticated') === 'true' ||
+                    sessionStorage.getItem('isAuthenticated') === 'true'
+                );
                 if (legacyLogged) showAdmin(); else showLogin();
             }
         });
     } catch (e) {
         console.warn('onAuthStateChanged failed, using localStorage fallback', e);
-        const legacyLogged = localStorage.getItem('adminLogado') === 'true' || localStorage.getItem('isAuthenticated') === 'true';
+        const legacyLogged = (
+            localStorage.getItem('adminLogado') === 'true' ||
+            localStorage.getItem('isAuthenticated') === 'true' ||
+            sessionStorage.getItem('isAuthenticated') === 'true'
+        );
         if (legacyLogged) showAdmin(); else showLogin();
     }
 
@@ -2316,7 +2324,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                localStorage.setItem('isAuthenticated', 'true');
+                const remember = document.getElementById('remember-me')?.checked;
+                if (remember) {
+                    localStorage.setItem('isAuthenticated', 'true');
+                } else {
+                    try { sessionStorage.setItem('isAuthenticated', 'true'); } catch(_) {}
+                }
                 // Firebase vai disparar onAuthStateChanged -> showAdmin();
             } catch (error) {
                 let userMessage = 'Erro desconhecido. Tente novamente.';
@@ -2339,6 +2352,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try { localStorage.removeItem('adminLogado'); } catch (_) {}
                 try { localStorage.removeItem('isAuthenticated'); } catch (_) {}
                 try { localStorage.removeItem('adminEmail'); } catch (_) {}
+                try { sessionStorage.removeItem('isAuthenticated'); } catch (_) {}
                 await signOut(auth);
                 // Em vez de mostrar a tela de login do admin, redireciona para a página pública
                 window.location.href = 'index.html';
