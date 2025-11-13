@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged, signInWithEmailAndPassword, signOut, db, addDoc, collection, getDocs, doc, deleteDoc, query, where } from './firebase-init.js';
+import { auth, onAuthStateChanged, signInWithEmailAndPassword, signOut, db, addDoc, collection, getDocs, doc, updateDoc, deleteDoc, query, where } from './firebase-init.js';
 
 // Classe para gerenciar busca por código de barras
 class BarcodeProductSearch {
@@ -3002,7 +3002,7 @@ document.addEventListener('DOMContentLoaded', () => {
     productForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        const id = document.getElementById('product-id').value || Date.now();
+        const id = document.getElementById('product-id').value.trim();
         const name = document.getElementById('product-name').value;
         const price = parseFloat(document.getElementById('product-price').value).toFixed(2);
         let market = productMarket.value;
@@ -3030,7 +3030,7 @@ document.addEventListener('DOMContentLoaded', () => {
             quantity = 1;
         }
 
-        const newProduct = {
+        const productData = {
             name,
             price,
             market,
@@ -3044,32 +3044,62 @@ document.addEventListener('DOMContentLoaded', () => {
             imageUrl
         };
 
+        // Log para debug
+        console.log('🔍 DEBUG - ID do produto:', id);
+        console.log('🔍 DEBUG - ID vazio?', id === '');
+        console.log('🔍 DEBUG - Ação:', id ? 'ATUALIZAR' : 'CRIAR');
+
         // Salva no Firestore
         (async () => {
             try {
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const docRef = await addDoc(collection(db, `/artifacts/${appId}/public/data/products`), newProduct);
+                const productsCollection = collection(db, `/artifacts/${appId}/public/data/products`);
                 
-                // Adicionar o ID do documento ao produto
-                newProduct.id = docRef.id;
+                if (id && id !== '') {
+                    // ATUALIZAR produto existente
+                    console.log('✏️ Atualizando produto com ID:', id);
+                    const docRef = doc(db, `/artifacts/${appId}/public/data/products`, id);
+                    await updateDoc(docRef, productData);
+                    
+                    // Atualizar localStorage
+                    const existingProducts = getFromLocalStorage('products');
+                    const index = existingProducts.findIndex(p => p.id === id);
+                    if (index !== -1) {
+                        existingProducts[index] = { ...productData, id };
+                        saveToLocalStorage('products', existingProducts);
+                    }
+                    
+                    console.log('✅ Produto atualizado com sucesso!');
+                    alert('Produto atualizado com sucesso!');
+                } else {
+                    // CRIAR novo produto
+                    console.log('➕ Criando novo produto');
+                    const docRef = await addDoc(productsCollection, productData);
+                    
+                    // Adicionar o ID do documento ao produto
+                    productData.id = docRef.id;
+                    
+                    // Atualizar localStorage com o novo produto
+                    const existingProducts = getFromLocalStorage('products');
+                    existingProducts.push(productData);
+                    saveToLocalStorage('products', existingProducts);
+                    
+                    console.log('✅ Produto criado com sucesso! ID:', docRef.id);
+                    alert('Produto criado com sucesso!');
+                }
                 
-                // Atualizar localStorage com o novo produto
-                const existingProducts = getFromLocalStorage('products');
-                existingProducts.push(newProduct);
-                saveToLocalStorage('products', existingProducts);
-                
-                alert('Produto salvo com sucesso!');
                 renderProducts();
                 updateFilterOptions();
                 updateCounts();
                 productForm.reset();
                 document.getElementById('product-id').value = '';
+                document.getElementById('form-submit-btn').textContent = 'Adicionar Produto';
                 brandInputGroup.style.display = 'none';
                 otherMarketGroup.style.display = 'none';
                 imageUrlGroup.style.display = 'none';
                 document.getElementById('product-quantity').value = 1;
             } catch (error) {
-                console.error('Erro detalhado:', error);
+                console.error('❌ Erro detalhado:', error);
                 alert('Erro ao salvar produto: ' + error.message);
             }
         })();
@@ -3199,7 +3229,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetBtn.classList.contains('btn-edit')) {
             const product = getFromLocalStorage('products').find(p => p.id == productId);
             if (product) {
+                console.log('📝 EDITANDO produto:', product);
+                console.log('📝 ID do produto:', product.id);
+                
                 document.getElementById('product-id').value = product.id;
+                console.log('📝 Campo product-id preenchido com:', document.getElementById('product-id').value);
+                
                 document.getElementById('product-name').value = product.name;
                 document.getElementById('product-price').value = product.price;
                 

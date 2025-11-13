@@ -3,7 +3,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 // ADICIONADO: signInWithEmailAndPassword para a função de login
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, onSnapshot, doc, addDoc, setDoc, deleteDoc, query, where, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, addDoc, setDoc, updateDoc, deleteDoc, query, where, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // Habilita o log de depuração para ajudar a diagnosticar problemas
 setLogLevel('debug');
@@ -48,6 +48,7 @@ export {
     doc,
     addDoc,
     setDoc,
+    updateDoc,
     deleteDoc,
     query,
     where,
