@@ -294,7 +294,7 @@
     </div>
 
     <!-- Modal do Scanner de Código de Barras -->
-    <div id="barcode-scanner-modal" class="barcode-scanner-modal">
+    <div id="scanner-modal" class="modal barcode-scanner-modal">
         <div class="barcode-scanner-content">
             <div class="scanner-header">
                 <h3>Scanner de Código de Barras</h3>
@@ -316,7 +316,7 @@
                     </div>
                 </div>
                 <div class="scanner-info">
-                    <p>Posicione o código de barras dentro da área destacada</p>
+                    <p id="scanner-message">Posicione o código de barras dentro da área destacada</p>
                     <div id="scanner-result" class="scanner-result"></div>
                 </div>
             </div>
@@ -414,34 +414,71 @@
     <script>
         // Adaptar scanner para preencher campo de código de barras do admin
         document.addEventListener('DOMContentLoaded', function() {
-            // Redirecionar detecção de código para o campo product-barcode (admin)
-            const originalOnDetected = window.Quagga?.onDetected;
-            if (originalOnDetected && typeof Quagga !== 'undefined') {
-                Quagga.onDetected(function(data) {
-                    try {
-                        const barcode = data.codeResult.code;
-                        console.log('Código detectado (admin):', barcode);
+            console.log('Admin scanner adapter loaded');
+            
+            // Hook para preencher o campo product-barcode quando o scanner detectar código
+            // O barcode-scanner.js vai preencher barcode-search-bar (index), então interceptamos
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                        const barcodeSearchBar = document.getElementById('barcode-search-bar');
+                        const productBarcode = document.getElementById('product-barcode');
                         
-                        // Preencher campo de código de barras do admin
-                        const barcodeInput = document.getElementById('product-barcode');
-                        if (barcodeInput) {
-                            barcodeInput.value = barcode;
+                        if (barcodeSearchBar && productBarcode && barcodeSearchBar.value) {
+                            // Copiar valor detectado para o campo do admin
+                            productBarcode.value = barcodeSearchBar.value;
                             const event = new Event('input', { bubbles: true });
-                            barcodeInput.dispatchEvent(event);
+                            productBarcode.dispatchEvent(event);
+                            console.log('Código copiado para product-barcode:', barcodeSearchBar.value);
                         }
-                    } catch (err) {
-                        console.error('Erro ao processar código no admin:', err);
+                    }
+                });
+            });
+            
+            // Criar campo invisível barcode-search-bar para o scanner funcionar
+            if (!document.getElementById('barcode-search-bar')) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.id = 'barcode-search-bar';
+                document.body.appendChild(hiddenInput);
+                
+                // Observar mudanças no campo oculto
+                observer.observe(hiddenInput, { attributes: true, attributeOldValue: true });
+                
+                // Também observar via evento de input direto
+                hiddenInput.addEventListener('input', function() {
+                    const productBarcode = document.getElementById('product-barcode');
+                    if (productBarcode && this.value) {
+                        productBarcode.value = this.value;
+                        const event = new Event('input', { bubbles: true });
+                        productBarcode.dispatchEvent(event);
+                        console.log('Código detectado (via input):', this.value);
                     }
                 });
             }
             
             // Garantir que o botão scan-barcode-btn abra o scanner
             const scanBarcodeBtn = document.getElementById('scan-barcode-btn');
-            if (scanBarcodeBtn && typeof window.openBarcodeScanner === 'function') {
-                scanBarcodeBtn.addEventListener('click', function(e) {
+            if (scanBarcodeBtn) {
+                // Remover listeners antigos se houver
+                const newBtn = scanBarcodeBtn.cloneNode(true);
+                scanBarcodeBtn.parentNode.replaceChild(newBtn, scanBarcodeBtn);
+                
+                newBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    window.openBarcodeScanner();
+                    console.log('Scan barcode button clicked');
+                    
+                    if (typeof window.openBarcodeScanner === 'function') {
+                        window.openBarcodeScanner();
+                    } else {
+                        console.error('window.openBarcodeScanner não está disponível');
+                        alert('Erro: Scanner não inicializado. Recarregue a página.');
+                    }
                 });
+                
+                console.log('Botão scan-barcode-btn configurado');
+            } else {
+                console.error('Botão scan-barcode-btn não encontrado');
             }
         });
     </script>
