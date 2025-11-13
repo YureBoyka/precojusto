@@ -22,6 +22,7 @@
     let currentCameraIndex = 0;
     let availableCameras = [];
     let scannerActive = false;
+    let isSwitchingCamera = false; // Flag para suprimir erros durante troca
 
     // Beep sonoro ao detectar código
     function playBeep() {
@@ -114,6 +115,9 @@
         console.log('=== INICIANDO TROCA DE CÂMERA ===');
         console.log('Câmera atual:', currentCameraIndex);
         
+        // Ativar flag para suprimir erros durante troca
+        isSwitchingCamera = true;
+        
         currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
         console.log('Nova câmera:', currentCameraIndex);
         
@@ -146,7 +150,11 @@
             if (switchCameraBtn) {
                 switchCameraBtn.disabled = availableCameras.length <= 1;
             }
-            console.log('=== TROCA DE CÂMERA CONCLUÍDA ===');
+            // Desativar flag após troca completa
+            setTimeout(() => {
+                isSwitchingCamera = false;
+                console.log('=== TROCA DE CÂMERA CONCLUÍDA ===');
+            }, 500);
         }, delay);
     }
 
@@ -253,64 +261,85 @@
             // Atualizar controles ANTES de inicializar Quagga
             updateCameraControls();
 
-            // Inicializar Quagga
+            // Inicializar Quagga com try-catch para capturar erros síncronos
             if (typeof Quagga === 'undefined') {
                 showScannerMessage('Biblioteca Quagga não carregada', 'error');
                 return;
             }
 
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: scannerTarget,
-                    constraints: constraints.video,
-                    singleChannel: false
-                },
-                locator: {
-                    patchSize: "medium",
-                    halfSample: true
-                },
-                numOfWorkers: navigator.hardwareConcurrency || 4,
-                decoder: {
-                    readers: [
-                        "ean_reader",
-                        "ean_8_reader",
-                        "code_128_reader",
-                        "code_39_reader",
-                        "upc_reader",
-                        "upc_e_reader"
-                    ],
-                    multiple: false
-                },
-                locate: true
-            }, function(err) {
-                if (err) {
-                    console.error('Erro ao inicializar Quagga:', err);
-                    showScannerMessage('Erro ao inicializar scanner: ' + (err.message || err), 'error');
-                    return;
-                }
-
-                console.log('✓ Quagga inicializado com sucesso');
-                
-                try {
-                    Quagga.start();
-                    quaggaInitialized = true;
-                    console.log('✓ Quagga iniciado');
-                    
-                    // Registrar listener APÓS Quagga estar iniciado
-                    Quagga.onDetected(handleBarcodeDetection);
-                    console.log('✓ Listener de detecção registrado');
-                    
-                    if (scannerMessage) {
-                        scannerMessage.textContent = 'Posicione o código de barras dentro da área destacada';
+            try {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: scannerTarget,
+                        constraints: constraints.video,
+                        singleChannel: false
+                    },
+                    locator: {
+                        patchSize: "medium",
+                        halfSample: true
+                    },
+                    numOfWorkers: navigator.hardwareConcurrency || 4,
+                    decoder: {
+                        readers: [
+                            "ean_reader",
+                            "ean_8_reader",
+                            "code_128_reader",
+                            "code_39_reader",
+                            "upc_reader",
+                            "upc_e_reader"
+                        ],
+                        multiple: false
+                    },
+                    locate: true
+                }, function(err) {
+                    if (err) {
+                        console.error('Erro ao inicializar Quagga:', err);
+                        
+                        // Não mostrar erro ao usuário se estiver trocando câmera (é temporário)
+                        if (!isSwitchingCamera) {
+                            showScannerMessage('Erro ao inicializar scanner: ' + (err.message || err), 'error');
+                        } else {
+                            console.log('Erro durante troca de câmera (ignorado):', err);
+                        }
+                        return;
                     }
-                } catch (startErr) {
-                    console.error('Erro ao iniciar Quagga:', startErr);
-                    showScannerMessage('Erro ao iniciar scanner: ' + startErr.message, 'error');
-                    quaggaInitialized = false;
+
+                    console.log('✓ Quagga inicializado com sucesso');
+                    
+                    try {
+                        Quagga.start();
+                        quaggaInitialized = true;
+                        console.log('✓ Quagga iniciado');
+                        
+                        // Registrar listener APÓS Quagga estar iniciado
+                        Quagga.onDetected(handleBarcodeDetection);
+                        console.log('✓ Listener de detecção registrado');
+                        
+                        if (scannerMessage) {
+                            scannerMessage.textContent = 'Posicione o código de barras dentro da área destacada';
+                        }
+                    } catch (startErr) {
+                        console.error('Erro ao iniciar Quagga:', startErr);
+                        
+                        // Não mostrar erro ao usuário se estiver trocando câmera
+                        if (!isSwitchingCamera) {
+                            showScannerMessage('Erro ao iniciar scanner: ' + startErr.message, 'error');
+                        }
+                        quaggaInitialized = false;
+                    }
+                });
+            } catch (initErr) {
+                console.error('Erro síncrono ao inicializar Quagga:', initErr);
+                
+                // Não mostrar erro ao usuário se estiver trocando câmera
+                if (!isSwitchingCamera) {
+                    showScannerMessage('Erro ao configurar scanner: ' + initErr.message, 'error');
+                } else {
+                    console.log('Erro síncrono durante troca (ignorado):', initErr);
                 }
-            });
+            }
 
         } catch (error) {
             console.error('Erro ao acessar câmera:', error);
