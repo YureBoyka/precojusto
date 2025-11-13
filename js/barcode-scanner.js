@@ -111,57 +111,10 @@
         }
     }
 
-    // Trocar entre câmeras
+    // Trocar entre câmeras - DESABILITADO (sempre usa câmera traseira)
     async function switchCamera() {
-        if (availableCameras.length <= 1) {
-            console.log('Apenas uma câmera disponível');
-            return;
-        }
-        
-        console.log('=== INICIANDO TROCA DE CÂMERA ===');
-        console.log('Câmera atual:', currentCameraIndex);
-        
-        // Ativar flag para suprimir erros durante troca
-        isSwitchingCamera = true;
-        
-        currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
-        console.log('Nova câmera:', currentCameraIndex);
-        
-        // Desabilitar botões temporariamente
-        if (switchCameraBtn) {
-            switchCameraBtn.disabled = true;
-        }
-        if (toggleFlashBtn) {
-            toggleFlashBtn.disabled = true;
-        }
-        
-        // Mostrar mensagem
-        if (scannerMessage) {
-            scannerMessage.textContent = 'Trocando câmera...';
-        }
-        
-        // Parar scanner atual completamente
-        await stopCameraStream();
-        
-        // Aguardar mais tempo para garantir que tudo foi limpo (iOS precisa de mais tempo)
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const delay = isIOS ? 800 : 700;
-        
-        console.log(`Aguardando ${delay}ms antes de reiniciar...`);
-        
-        setTimeout(async () => {
-            console.log('Reiniciando câmera...');
-            await startCamera();
-            // Reabilitar botões após reinicialização
-            if (switchCameraBtn) {
-                switchCameraBtn.disabled = availableCameras.length <= 1;
-            }
-            // Desativar flag após troca completa (dar tempo extra para Quagga estabilizar)
-            setTimeout(() => {
-                isSwitchingCamera = false;
-                console.log('=== TROCA DE CÂMERA CONCLUÍDA ===');
-            }, 1000); // Aumentado de 500ms para 1000ms
-        }, delay);
+        console.log('Troca de câmera desabilitada - sempre usa câmera traseira');
+        return;
     }
 
     // Parar stream da câmera
@@ -231,32 +184,16 @@
         }
 
         try {
-            // Buscar câmeras se ainda não listadas
-            if (availableCameras.length === 0) {
-                await getCameras();
-            }
-
-            // Definir constraints com fallbacks para iOS
-            let constraints = { 
+            // SEMPRE usar câmera traseira (environment)
+            const constraints = { 
                 video: { 
-                    facingMode: { ideal: 'environment' },
+                    facingMode: 'environment', // Forçar câmera traseira
                     width: { min: 640, ideal: 1280, max: 1920 },
                     height: { min: 480, ideal: 720, max: 1080 }
                 } 
             };
-            
-            if (availableCameras.length > 0) {
-                const camera = availableCameras[currentCameraIndex];
-                constraints = {
-                    video: {
-                        deviceId: { exact: camera.deviceId },
-                        width: { min: 640, ideal: 1280, max: 1920 },
-                        height: { min: 480, ideal: 720, max: 1080 }
-                    }
-                };
-            }
 
-            console.log('Iniciando câmera com constraints:', constraints);
+            console.log('Iniciando câmera traseira com constraints:', constraints);
 
             // Obter stream
             currentStream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -472,11 +409,10 @@
                 }
             }
             
-            // Atualizar botão de trocar câmera
+            // Ocultar botão de trocar câmera (sempre usa traseira)
             if (switchCameraBtn) {
-                const canSwitch = availableCameras.length > 1;
-                switchCameraBtn.disabled = !canSwitch;
-                console.log(`Trocar câmera: ${canSwitch ? 'habilitado' : 'desabilitado'}`);
+                switchCameraBtn.style.display = 'none';
+                console.log('Botão trocar câmera: OCULTO (sempre câmera traseira)');
             }
             
             console.log('=========================');
