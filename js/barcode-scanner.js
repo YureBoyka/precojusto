@@ -158,23 +158,33 @@
                 await getCameras();
             }
 
-            // Definir constraints
-            let constraints = { video: { facingMode: 'environment' } };
+            // Definir constraints com fallbacks para iOS
+            let constraints = { 
+                video: { 
+                    facingMode: { ideal: 'environment' },
+                    width: { min: 640, ideal: 1280, max: 1920 },
+                    height: { min: 480, ideal: 720, max: 1080 }
+                } 
+            };
             
             if (availableCameras.length > 0) {
                 const camera = availableCameras[currentCameraIndex];
                 constraints = {
                     video: {
                         deviceId: { exact: camera.deviceId },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
+                        width: { min: 640, ideal: 1280, max: 1920 },
+                        height: { min: 480, ideal: 720, max: 1080 }
                     }
                 };
             }
 
+            console.log('Iniciando câmera com constraints:', constraints);
+
             // Obter stream
             currentStream = await navigator.mediaDevices.getUserMedia(constraints);
             scannerActive = true;
+
+            console.log('Stream da câmera obtido com sucesso');
 
             // Inicializar Quagga
             if (typeof Quagga === 'undefined') {
@@ -187,8 +197,14 @@
                     name: "Live",
                     type: "LiveStream",
                     target: scannerTarget,
-                    constraints: constraints.video
+                    constraints: constraints.video,
+                    singleChannel: false
                 },
+                locator: {
+                    patchSize: "medium",
+                    halfSample: true
+                },
+                numOfWorkers: navigator.hardwareConcurrency || 4,
                 decoder: {
                     readers: [
                         "ean_reader",
@@ -197,13 +213,10 @@
                         "code_39_reader",
                         "upc_reader",
                         "upc_e_reader"
-                    ]
+                    ],
+                    multiple: false
                 },
-                locate: true,
-                locator: {
-                    patchSize: "medium",
-                    halfSample: true
-                }
+                locate: true
             }, function(err) {
                 if (err) {
                     console.error('Erro ao inicializar Quagga:', err);
@@ -267,7 +280,57 @@
 
         } catch (error) {
             console.error('Erro ao acessar câmera:', error);
-            showScannerMessage('Não foi possível acessar a câmera', 'error');
+            
+            // Mensagens específicas para diferentes erros
+            let errorMessage = 'Não foi possível acessar a câmera';
+            
+            if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                errorMessage = 'Permissão de câmera negada. Por favor, permita o acesso à câmera nas configurações.';
+            } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                errorMessage = 'Nenhuma câmera encontrada no dispositivo.';
+            } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                errorMessage = 'Câmera está sendo usada por outro aplicativo.';
+            } else if (error.name === 'OverconstrainedError') {
+                errorMessage = 'Configuração de câmera não suportada. Tentando novamente...';
+                
+                // Tentar com constraints mais simples (especialmente para iOS)
+                try {
+                    console.log('Tentando com constraints simplificadas...');
+                    const simpleConstraints = { video: { facingMode: 'environment' } };
+                    currentStream = await navigator.mediaDevices.getUserMedia(simpleConstraints);
+                    scannerActive = true;
+                    
+                    // Reiniciar Quagga com configuração simplificada
+                    Quagga.init({
+                        inputStream: {
+                            name: "Live",
+                            type: "LiveStream",
+                            target: scannerTarget,
+                            constraints: { facingMode: 'environment' }
+                        },
+                        decoder: {
+                            readers: ["ean_reader", "ean_8_reader", "code_128_reader", "upc_reader"]
+                        }
+                    }, function(err) {
+                        if (!err) {
+                            Quagga.start();
+                            quaggaInitialized = true;
+                            console.log('Quagga iniciado com configuração simplificada');
+                        }
+                    });
+                    return;
+                } catch (retryError) {
+                    console.error('Erro na segunda tentativa:', retryError);
+                }
+            }
+            
+            showScannerMessage(errorMessage, 'error');
+            
+            // No iOS, sugerir abrir no Safari
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS && scannerMessage) {
+                scannerMessage.innerHTML = errorMessage + '<br><small>Certifique-se de estar usando o Safari.</small>';
+            }
         }
     }
 
@@ -276,6 +339,14 @@
         if (!scannerModal) return;
         
         console.log('Abrindo scanner...');
+        
+        // Detectar iOS
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        
+        if (isIOS) {
+            console.log('Dispositivo iOS detectado');
+        }
+        
         scannerModal.classList.add('show');
         scannerModal.style.display = 'flex';
         document.body.classList.add('modal-open');
@@ -287,8 +358,13 @@
             toggleFlashBtn.innerHTML = '<i class="fas fa-bolt"></i> Flash';
         }
         
-        // Iniciar câmera após modal estar visível
-        setTimeout(() => startCamera(), 300);
+        // Mostrar mensagem de carregamento
+        if (scannerMessage) {
+            scannerMessage.textContent = 'Solicitando acesso à câmera...';
+        }
+        
+        // Iniciar câmera após modal estar visível (iOS precisa de mais tempo)
+        setTimeout(() => startCamera(), isIOS ? 500 : 300);
     }
 
     // Fechar modal do scanner
