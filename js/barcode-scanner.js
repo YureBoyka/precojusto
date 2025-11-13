@@ -111,9 +111,22 @@
         currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
         console.log('Trocando para câmera:', currentCameraIndex);
         
-        // Parar scanner atual e reiniciar com nova câmera
+        // Desabilitar botão temporariamente para evitar cliques múltiplos
+        if (switchCameraBtn) {
+            switchCameraBtn.disabled = true;
+        }
+        
+        // Parar scanner atual completamente
         await stopCameraStream();
-        setTimeout(() => startCamera(), 300);
+        
+        // Aguardar mais tempo para garantir que tudo foi limpo
+        setTimeout(async () => {
+            await startCamera();
+            // Reabilitar botão após reinicialização
+            if (switchCameraBtn) {
+                switchCameraBtn.disabled = false;
+            }
+        }, 500);
     }
 
     // Parar stream da câmera
@@ -121,6 +134,19 @@
         console.log('Parando câmera...');
         
         try {
+            // Primeiro para o Quagga antes do stream
+            if (quaggaInitialized && typeof Quagga !== 'undefined') {
+                try {
+                    Quagga.offDetected(); // Remove listeners
+                    Quagga.stop();
+                    console.log('Quagga parado');
+                } catch (e) {
+                    console.warn('Erro ao parar Quagga:', e);
+                }
+                quaggaInitialized = false;
+            }
+            
+            // Depois para os tracks do stream
             if (currentStream) {
                 currentStream.getTracks().forEach(track => {
                     track.stop();
@@ -129,17 +155,16 @@
                 currentStream = null;
             }
             
-            if (quaggaInitialized && typeof Quagga !== 'undefined') {
-                Quagga.stop();
-                quaggaInitialized = false;
-                console.log('Quagga parado');
-            }
-            
+            // Limpa o elemento visual
             if (scannerTarget) {
                 scannerTarget.innerHTML = '';
             }
             
             scannerActive = false;
+            
+            // Aguardar um pouco para garantir limpeza completa
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
         } catch (error) {
             console.error('Erro ao parar câmera:', error);
         }
