@@ -334,6 +334,20 @@
         const barcode = data.codeResult.code;
         console.log('Código detectado:', barcode);
         
+        // Desligar flash se estiver ligado
+        if (flashEnabled && currentStream) {
+            try {
+                const track = currentStream.getVideoTracks()[0];
+                track.applyConstraints({
+                    advanced: [{ torch: false }]
+                });
+                flashEnabled = false;
+                console.log('Flash desligado após detecção');
+            } catch (e) {
+                console.warn('Erro ao desligar flash:', e);
+            }
+        }
+        
         // Tocar beep
         playBeep();
         
