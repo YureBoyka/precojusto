@@ -106,40 +106,66 @@
 
     // Trocar entre câmeras
     async function switchCamera() {
-        if (availableCameras.length <= 1) return;
+        if (availableCameras.length <= 1) {
+            console.log('Apenas uma câmera disponível');
+            return;
+        }
+        
+        console.log('=== INICIANDO TROCA DE CÂMERA ===');
+        console.log('Câmera atual:', currentCameraIndex);
         
         currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
-        console.log('Trocando para câmera:', currentCameraIndex);
+        console.log('Nova câmera:', currentCameraIndex);
         
-        // Desabilitar botão temporariamente para evitar cliques múltiplos
+        // Desabilitar botões temporariamente
         if (switchCameraBtn) {
             switchCameraBtn.disabled = true;
+        }
+        if (toggleFlashBtn) {
+            toggleFlashBtn.disabled = true;
+        }
+        
+        // Mostrar mensagem
+        if (scannerMessage) {
+            scannerMessage.textContent = 'Trocando câmera...';
         }
         
         // Parar scanner atual completamente
         await stopCameraStream();
         
-        // Aguardar mais tempo para garantir que tudo foi limpo
+        // Aguardar mais tempo para garantir que tudo foi limpo (iOS precisa de mais tempo)
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const delay = isIOS ? 800 : 700;
+        
+        console.log(`Aguardando ${delay}ms antes de reiniciar...`);
+        
         setTimeout(async () => {
+            console.log('Reiniciando câmera...');
             await startCamera();
-            // Reabilitar botão após reinicialização
+            // Reabilitar botões após reinicialização
             if (switchCameraBtn) {
                 switchCameraBtn.disabled = availableCameras.length <= 1;
             }
-        }, 600);
+            console.log('=== TROCA DE CÂMERA CONCLUÍDA ===');
+        }, delay);
     }
 
     // Parar stream da câmera
     async function stopCameraStream() {
         console.log('Parando câmera...');
         
+        // Marcar como inativo imediatamente
+        scannerActive = false;
+        
         try {
             // Primeiro para o Quagga antes do stream
             if (quaggaInitialized && typeof Quagga !== 'undefined') {
                 try {
+                    console.log('Removendo listener e parando Quagga...');
                     Quagga.offDetected(handleBarcodeDetection); // Remove listener específico
+                    Quagga.offProcessed(); // Remove listener de processamento também
                     Quagga.stop();
-                    console.log('Quagga parado');
+                    console.log('✓ Quagga parado');
                 } catch (e) {
                     console.warn('Erro ao parar Quagga:', e);
                 }
@@ -150,26 +176,33 @@
             if (currentStream) {
                 currentStream.getTracks().forEach(track => {
                     track.stop();
-                    console.log('Track parado:', track.label);
+                    console.log('✓ Track parado:', track.label);
                 });
                 currentStream = null;
             }
             
-            // Limpa o elemento visual
+            // Limpa o elemento visual completamente
             if (scannerTarget) {
                 scannerTarget.innerHTML = '';
+                // Força limpeza de canvas e vídeos
+                const videos = scannerTarget.getElementsByTagName('video');
+                const canvases = scannerTarget.getElementsByTagName('canvas');
+                Array.from(videos).forEach(v => v.remove());
+                Array.from(canvases).forEach(c => c.remove());
             }
             
-            scannerActive = false;
             flashEnabled = false;
             
             // Resetar botão de flash
             if (toggleFlashBtn) {
                 toggleFlashBtn.innerHTML = '<i class="fas fa-bolt"></i> Flash';
+                toggleFlashBtn.style.display = 'none';
             }
             
+            console.log('✓ Câmera parada completamente');
+            
             // Aguardar um pouco para garantir limpeza completa
-            await new Promise(resolve => setTimeout(resolve, 150));
+            await new Promise(resolve => setTimeout(resolve, 200));
             
         } catch (error) {
             console.error('Erro ao parar câmera:', error);
@@ -254,21 +287,30 @@
             }, function(err) {
                 if (err) {
                     console.error('Erro ao inicializar Quagga:', err);
-                    showScannerMessage('Erro ao inicializar scanner', 'error');
+                    showScannerMessage('Erro ao inicializar scanner: ' + (err.message || err), 'error');
                     return;
                 }
 
-                Quagga.start();
-                quaggaInitialized = true;
-                console.log('Quagga iniciado');
+                console.log('✓ Quagga inicializado com sucesso');
                 
-                if (scannerMessage) {
-                    scannerMessage.textContent = 'Posicione o código de barras dentro da área destacada';
+                try {
+                    Quagga.start();
+                    quaggaInitialized = true;
+                    console.log('✓ Quagga iniciado');
+                    
+                    // Registrar listener APÓS Quagga estar iniciado
+                    Quagga.onDetected(handleBarcodeDetection);
+                    console.log('✓ Listener de detecção registrado');
+                    
+                    if (scannerMessage) {
+                        scannerMessage.textContent = 'Posicione o código de barras dentro da área destacada';
+                    }
+                } catch (startErr) {
+                    console.error('Erro ao iniciar Quagga:', startErr);
+                    showScannerMessage('Erro ao iniciar scanner: ' + startErr.message, 'error');
+                    quaggaInitialized = false;
                 }
             });
-
-            // Detectar código de barras
-            Quagga.onDetected(handleBarcodeDetection);
 
         } catch (error) {
             console.error('Erro ao acessar câmera:', error);
@@ -373,32 +415,49 @@
 
     // Atualizar controles da câmera (flash, trocar câmera)
     function updateCameraControls() {
-        if (!currentStream) return;
+        if (!currentStream) {
+            console.warn('updateCameraControls: sem stream ativo');
+            return;
+        }
         
         try {
             const track = currentStream.getVideoTracks()[0];
+            if (!track) {
+                console.warn('updateCameraControls: sem track de vídeo');
+                return;
+            }
+            
             const capabilities = track.getCapabilities();
             const settings = track.getSettings();
             
-            console.log('Câmera ativa:', settings.facingMode || 'desconhecida');
+            console.log('=== CONTROLES DA CÂMERA ===');
+            console.log('FacingMode:', settings.facingMode || 'desconhecida');
+            console.log('Capabilities:', capabilities);
             
             // Verificar suporte ao flash
             if (toggleFlashBtn) {
                 if (capabilities.torch) {
                     toggleFlashBtn.style.display = 'inline-block';
                     toggleFlashBtn.disabled = false;
-                    console.log('✓ Flash disponível nesta câmera');
+                    toggleFlashBtn.innerHTML = '<i class="fas fa-bolt"></i> Flash';
+                    flashEnabled = false; // Reset estado
+                    console.log('✓ Flash DISPONÍVEL nesta câmera');
                 } else {
                     toggleFlashBtn.style.display = 'none';
+                    toggleFlashBtn.disabled = true;
                     flashEnabled = false;
-                    console.log('✗ Flash não disponível nesta câmera');
+                    console.log('✗ Flash NÃO DISPONÍVEL nesta câmera');
                 }
             }
             
             // Atualizar botão de trocar câmera
             if (switchCameraBtn) {
-                switchCameraBtn.disabled = availableCameras.length <= 1;
+                const canSwitch = availableCameras.length > 1;
+                switchCameraBtn.disabled = !canSwitch;
+                console.log(`Trocar câmera: ${canSwitch ? 'habilitado' : 'desabilitado'}`);
             }
+            
+            console.log('=========================');
         } catch (err) {
             console.error('Erro ao atualizar controles:', err);
         }
