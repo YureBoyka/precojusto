@@ -2012,9 +2012,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Event listener global para impedir scroll quando modal está aberto
+    // Event listener global para impedir scroll APENAS quando realmente há um modal visível
     const preventScroll = (e) => {
-        if (document.body.classList.contains('modal-open')) {
+        // Exigir classe e um modal .show presente (safety contra classe presa por engano)
+        const hasLockClass = document.body.classList.contains('modal-open');
+        const anyModalOpen = !!document.querySelector('.modal.show');
+        if (!(hasLockClass && anyModalOpen)) return; // não bloquear
+
+        // Bloquear scroll da página de fundo; permitir scroll dentro do modal
+        const openModalEl = document.querySelector('.modal.show .modal-content');
+        const isInsideModal = openModalEl && openModalEl.contains(e.target);
+        if (!isInsideModal) {
             e.preventDefault();
             e.stopPropagation();
             return false;
@@ -2025,12 +2033,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('wheel', preventScroll, { passive: false });
     document.addEventListener('touchmove', preventScroll, { passive: false });
     document.addEventListener('keydown', (e) => {
-        if (document.body.classList.contains('modal-open')) {
-            // Impedir teclas de navegação (setas, page up/down, home, end)
-            if ([32, 33, 34, 35, 36, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-                e.preventDefault();
-                return false;
-            }
+        const hasLockClass = document.body.classList.contains('modal-open');
+        const anyModalOpen = !!document.querySelector('.modal.show');
+        if (!(hasLockClass && anyModalOpen)) return;
+        // Impedir teclas de navegação (setas, page up/down, home, end)
+        if ([32, 33, 34, 35, 36, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+            return false;
         }
     });
 
@@ -4065,9 +4074,14 @@ window.addEventListener('productsLoaded', (event) => {
         });
     }
 
-    // Event listener global para impedir scroll quando modal está aberto
+    // Event listener global para impedir scroll APENAS quando realmente há um modal visível
     const preventScroll = (e) => {
-        if (document.body.classList.contains('modal-open')) {
+        const hasLockClass = document.body.classList.contains('modal-open');
+        const anyModalOpen = !!document.querySelector('.modal.show');
+        if (!(hasLockClass && anyModalOpen)) return;
+        const openModalEl = document.querySelector('.modal.show .modal-content');
+        const isInsideModal = openModalEl && openModalEl.contains(e.target);
+        if (!isInsideModal) {
             e.preventDefault();
             e.stopPropagation();
             return false;
@@ -4078,12 +4092,12 @@ window.addEventListener('productsLoaded', (event) => {
     document.addEventListener('wheel', preventScroll, { passive: false });
     document.addEventListener('touchmove', preventScroll, { passive: false });
     document.addEventListener('keydown', (e) => {
-        if (document.body.classList.contains('modal-open')) {
-            // Impedir teclas de navegação (setas, page up/down, home, end)
-            if ([32, 33, 34, 35, 36, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-                e.preventDefault();
-                return false;
-            }
+        const hasLockClass = document.body.classList.contains('modal-open');
+        const anyModalOpen = !!document.querySelector('.modal.show');
+        if (!(hasLockClass && anyModalOpen)) return;
+        if ([32, 33, 34, 35, 36, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+            return false;
         }
     });
 
