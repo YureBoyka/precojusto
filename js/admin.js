@@ -390,18 +390,68 @@ class BarcodeProductSearch {
                                     const imgSrc = img.thumbnail || img.original || img.link;
                                     imgEl.src = imgSrc;
                                     imgEl.alt = img.title || `Imagem ${idx + 1}`;
-                                    imgEl.title = (img.title || img.link || '') + ` • ${usedEngine}`;
-                                    imgEl.style = 'width:90px; height:90px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); cursor:pointer; border:2px solid #eee; margin:4px;';
+                                    imgEl.title = `Clique para usar: ${img.title || img.link || ''} • ${usedEngine}`;
+                                    imgEl.style = 'width:90px; height:90px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); cursor:pointer; border:2px solid #eee; margin:4px; transition:all 0.2s ease;';
+                                    
+                                    // Efeito hover
+                                    imgEl.onmouseenter = () => {
+                                        if (imgEl.style.border !== '3px solid rgb(37, 99, 235)') {
+                                            imgEl.style.transform = 'scale(1.08)';
+                                            imgEl.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                                        }
+                                    };
+                                    imgEl.onmouseleave = () => {
+                                        if (imgEl.style.border !== '3px solid rgb(37, 99, 235)') {
+                                            imgEl.style.transform = 'scale(1)';
+                                            imgEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                                        }
+                                    };
+                                    
                                     imgEl.onerror = () => {
                                         console.warn('Erro ao carregar miniatura:', imgSrc);
                                         imgEl.style.opacity = '0.3';
                                     };
                                     imgEl.onclick = () => {
                                         const finalUrl = img.original || img.link || img.thumbnail;
+                                        
+                                        // Remove seleção anterior
+                                        Array.from(resultsDiv.children).forEach(child => {
+                                            child.style.border = '2px solid #eee';
+                                            child.style.transform = 'scale(1)';
+                                            child.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                                        });
+                                        
+                                        // Destaca imagem selecionada
+                                        imgEl.style.border = '3px solid #2563eb';
+                                        imgEl.style.transform = 'scale(1.05)';
+                                        imgEl.style.boxShadow = '0 4px 16px rgba(37, 99, 235, 0.3)';
+                                        
+                                        // Preenche campo de URL no modal
                                         urlInput.value = finalUrl;
-                                        console.log('Imagem selecionada:', finalUrl);
-                                        Array.from(resultsDiv.children).forEach(child => child.style.border = '2px solid #eee');
-                                        imgEl.style.border = '2px solid #2563eb';
+                                        
+                                        // Aplica IMEDIATAMENTE no produto (sem precisar clicar em "Usar Imagem")
+                                        const imageInput = document.getElementById('product-image');
+                                        if (imageInput) {
+                                            imageInput.value = finalUrl;
+                                            imageInput.style.background = 'linear-gradient(90deg, #d4edda 0%, #ffffff 100%)';
+                                            imageInput.title = 'Imagem selecionada do Google';
+                                            
+                                            // Garantir opção de URL personalizada ativada
+                                            const customImageRadio = document.getElementById('use-custom-image');
+                                            if (customImageRadio) customImageRadio.checked = true;
+                                            
+                                            // Mostrar preview se função existir
+                                            if (typeof this.showImagePreview === 'function') {
+                                                this.showImagePreview(finalUrl);
+                                            }
+                                            
+                                            // Efeito visual de confirmação
+                                            setTimeout(() => { 
+                                                imageInput.style.background = ''; 
+                                            }, 2500);
+                                        }
+                                        
+                                        console.log('✅ Imagem aplicada ao produto:', finalUrl);
                                     };
                                     resultsDiv.appendChild(imgEl);
                                 });
@@ -422,28 +472,35 @@ class BarcodeProductSearch {
                     useBtn.onclick = () => {
                         const imageUrl = urlInput.value.trim();
                         if (!imageUrl) {
-                            alert('Selecione ou cole o link da imagem para usar.');
+                            alert('Selecione uma imagem clicando nela ou cole o link manualmente.');
                             return;
                         }
+                        
                         // Troca imagem do produto
                         const imageInput = document.getElementById('product-image');
                         if (imageInput) {
                             imageInput.value = imageUrl;
-                            imageInput.style.background = 'linear-gradient(90deg, #e8f5e8 0%, #ffffff 100%)';
+                            imageInput.style.background = 'linear-gradient(90deg, #d4edda 0%, #ffffff 100%)';
                             imageInput.title = 'Imagem selecionada do Google';
                             setTimeout(() => { imageInput.style.background = ''; }, 3000);
+                            
                             // Garantir opção de URL personalizada ativada
                             const customImageRadio = document.getElementById('use-custom-image');
                             if (customImageRadio) customImageRadio.checked = true;
+                            
+                            // Mostra preview se função existir
+                            if (typeof this.showImagePreview === 'function') {
+                                this.showImagePreview(imageUrl);
+                            }
                         }
-                        // Fecha modal
+                        
+                        // Feedback visual
+                        console.log('✅ Imagem aplicada:', imageUrl);
+                        
+                        // Fecha modal automaticamente
                         modal.style.display = 'none';
                         urlInput.value = '';
                         if (resultsDiv) resultsDiv.innerHTML = '';
-                        // Mostra preview se função existir
-                        if (typeof this.showImagePreview === 'function') {
-                            this.showImagePreview(imageUrl);
-                        }
                     };
                 }
             }
