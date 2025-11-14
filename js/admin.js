@@ -452,6 +452,13 @@ class BarcodeProductSearch {
                                         }
                                         
                                         console.log('✅ Imagem aplicada ao produto:', finalUrl);
+                                        
+                                        // FECHA O MODAL AUTOMATICAMENTE após aplicar
+                                        setTimeout(() => {
+                                            modal.style.display = 'none';
+                                            urlInput.value = '';
+                                            if (resultsDiv) resultsDiv.innerHTML = '';
+                                        }, 300); // Pequeno delay para feedback visual
                                     };
                                     resultsDiv.appendChild(imgEl);
                                 });
