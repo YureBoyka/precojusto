@@ -178,6 +178,13 @@ class BarcodeProductSearch {
                     const modal = document.getElementById('google-image-modal');
                     const productName = document.getElementById('product-name').value.trim();
                     const brand = document.getElementById('product-brand').value.trim();
+                    
+                    // Limpar resultados e URL anteriores ANTES de abrir
+                    const urlInputField = document.getElementById('google-image-url-input');
+                    const resultsContainer = document.getElementById('serpapi-image-results');
+                    if (urlInputField) urlInputField.value = '';
+                    if (resultsContainer) resultsContainer.innerHTML = '';
+                    
                     let query = '';
                     if (productName && brand) {
                         query = `${brand} ${productName}`;
@@ -3382,6 +3389,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     console.log('✅ Produto atualizado com sucesso!');
                     alert('Produto atualizado com sucesso!');
+                    
+                    // Voltar para aba de produtos após atualizar
+                    const viewProductsTab = document.querySelector('[data-tab="tab-view-products"]');
+                    if (viewProductsTab) {
+                        viewProductsTab.click();
+                        // Scroll para o produto atualizado após renderizar
+                        setTimeout(() => {
+                            const productCard = document.querySelector(`[data-id="${id}"]`);
+                            if (productCard) {
+                                productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                productCard.style.outline = '3px solid #2563eb';
+                                setTimeout(() => { productCard.style.outline = ''; }, 2000);
+                            }
+                        }, 100);
+                    }
                 } else {
                     // CRIAR novo produto
                     console.log('➕ Criando novo produto');
@@ -3409,6 +3431,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 otherMarketGroup.style.display = 'none';
                 imageUrlGroup.style.display = 'none';
                 document.getElementById('product-quantity').value = 1;
+                
+                // Limpar campo de imagem e seus estilos após salvar
+                const imageInput = document.getElementById('product-image');
+                if (imageInput) {
+                    imageInput.value = '';
+                    imageInput.style.background = '';
+                    imageInput.title = '';
+                }
             } catch (error) {
                 console.error('❌ Erro detalhado:', error);
                 alert('Erro ao salvar produto: ' + error.message);
@@ -3542,6 +3572,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (product) {
                 console.log('📝 EDITANDO produto:', product);
                 console.log('📝 ID do produto:', product.id);
+                
+                // Limpar formulário antes de preencher com novo produto
+                const imageInput = document.getElementById('product-image');
+                if (imageInput) {
+                    imageInput.value = '';
+                    imageInput.style.background = '';
+                    imageInput.title = '';
+                }
                 
                 document.getElementById('product-id').value = product.id;
                 console.log('📝 Campo product-id preenchido com:', document.getElementById('product-id').value);
