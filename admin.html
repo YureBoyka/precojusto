@@ -281,12 +281,18 @@
 
                         <div class="form-group image-url-group">
                             <label for="product-image">URL da Imagem:</label>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <input type="url" id="product-image" placeholder="URL da imagem (Opcional)">
-                                <button type="button" id="search-image-btn" class="btn-search-image" title="Buscar imagem no Google" style="padding: 8px 12px; border-radius: 6px; border: none; background: #2563eb; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500; white-space: nowrap;">
-                                    <i class="fas fa-image"></i>
-                                    <span style="font-size: 13px;">Google Imagens</span>
-                                </button>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <input type="url" id="product-image" placeholder="URL da imagem (Opcional)" style="flex:1; min-width:260px;">
+                                <div style="display:flex; gap:8px;">
+                                    <button type="button" id="search-image-btn" class="btn-search-image" title="Buscar imagem no Google" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; background: #f3f3f3; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                        <i class="fas fa-image"></i>
+                                        <span style="font-size: 11px;">Google Imagens</span>
+                                    </button>
+                                    <button type="button" id="preview-image-btn" title="Ver imagem atual" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; background:#fff; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                                        <i class="fas fa-eye"></i>
+                                        <span style="font-size:11px;">Ver imagem atual</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -348,6 +354,19 @@
                 </section>
             </div>
         </main>
+    </div>
+    
+    <!-- Modal simples para visualizar imagem atual do produto -->
+    <div id="current-image-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10002; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:10px; padding:14px; max-width:90vw; max-height:90vh; display:flex; flex-direction:column; position:relative;">
+            <button id="close-current-image-modal" style="position:absolute; top:8px; right:8px; background:none; border:none; font-size:22px; cursor:pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="current-image-container" style="display:flex; align-items:center; justify-content:center; width:70vw; max-width:720px; height:70vh; max-height:80vh; overflow:hidden; background:#f9fafb; border-radius:8px;">
+                <img id="current-image-preview" src="" alt="Imagem do produto" style="max-width:100%; max-height:100%; object-fit:contain;">
+            </div>
+            <div id="current-image-caption" style="margin-top:8px; font-size:12px; color:#555; text-align:center;"></div>
+        </div>
     </div>
 
     <!-- Modal do Scanner de Código de Barras -->

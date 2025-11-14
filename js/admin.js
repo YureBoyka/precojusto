@@ -227,6 +227,51 @@ class BarcodeProductSearch {
                     } catch (_) {}
                 });
 
+                // Botão de visualizar imagem atual em modal
+                const previewImageBtn = document.getElementById('preview-image-btn');
+                if (previewImageBtn) {
+                    previewImageBtn.addEventListener('click', () => {
+                        const imgInput = document.getElementById('product-image');
+                        let src = (imgInput && imgInput.value.trim()) || '';
+
+                        // Se vazio, tenta buscar do produto em edição
+                        if (!src) {
+                            const id = document.getElementById('product-id').value;
+                            if (id) {
+                                const prod = getFromLocalStorage('products').find(p => p.id == id);
+                                if (prod && prod.imageUrl && prod.imageUrl !== 'DEFAULT_IMAGE_URL') {
+                                    src = prod.imageUrl;
+                                }
+                            }
+                        }
+
+                        const previewModal = document.getElementById('current-image-modal');
+                        const imgEl = document.getElementById('current-image-preview');
+                        const caption = document.getElementById('current-image-caption');
+                        if (!src) {
+                            caption.textContent = 'Sem imagem cadastrada para este produto.';
+                            imgEl.src = '';
+                        } else {
+                            caption.textContent = src;
+                            imgEl.src = src;
+                        }
+                        previewModal.style.display = 'flex';
+                        document.body.classList.add('admin-google-image-modal-open');
+                    });
+                }
+
+                // Fecha modal de visualização atual
+                const closeCurrentImageBtn = document.getElementById('close-current-image-modal');
+                const currentImageModal = document.getElementById('current-image-modal');
+                if (closeCurrentImageBtn && currentImageModal) {
+                    const closeFn = () => {
+                        currentImageModal.style.display = 'none';
+                        document.body.classList.remove('admin-google-image-modal-open');
+                    };
+                    closeCurrentImageBtn.addEventListener('click', closeFn);
+                    currentImageModal.addEventListener('click', (e) => { if (e.target === currentImageModal) closeFn(); });
+                }
+
                 // Modal logic
                 const modal = document.getElementById('google-image-modal');
                 const closeBtn = document.getElementById('close-google-image-modal');
@@ -3585,7 +3630,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('📝 ID do produto:', product.id);
                 console.log('📝 Imagem do produto:', product.imageUrl);
                 
-                // PRIMEIRO: Limpar TODOS os campos de imagem
+                // PRIMEIRO: Limpar TODOS os campos de imagem e qualquer preview anterior
                 const imageInput = document.getElementById('product-image');
                 const productImageUrlInput = document.getElementById('product-image');
                 if (imageInput) {
@@ -3593,6 +3638,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     imageInput.style.background = '';
                     imageInput.title = '';
                 }
+                const existingPreview = document.querySelector('.image-preview');
+                if (existingPreview) existingPreview.remove();
                 
                 document.getElementById('product-id').value = product.id;
                 console.log('📝 Campo product-id preenchido com:', document.getElementById('product-id').value);
@@ -3643,6 +3690,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         imageInput.value = product.imageUrl;
                         console.log('📝 Campo de imagem preenchido com:', product.imageUrl);
                     }
+                    // NÃO mostrar preview automático ao abrir edição — apenas via botão "Ver imagem atual"
                 }
 
                 // Trocar para a aba de adicionar produto e focar no campo
