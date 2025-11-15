@@ -2949,6 +2949,10 @@ document.addEventListener('DOMContentLoaded', () => {
         imageUrlGroup.style.display = 'none';
         document.getElementById('product-quantity').value = 1;
         
+        // Ocultar botão de deletar
+        const deleteBtn = document.getElementById('delete-product-btn');
+        if (deleteBtn) deleteBtn.style.display = 'none';
+        
         // Limpar campo de imagem e seus estilos
         const imageInput = document.getElementById('product-image');
         if (imageInput) {
@@ -3789,6 +3793,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Trocar para a aba de adicionar produto e focar no campo
                 tabAddProductBtn.click();
                 document.getElementById('form-submit-btn').textContent = 'Salvar Alterações';
+                
+                // Mostrar botão de deletar quando está editando
+                const deleteBtn = document.getElementById('delete-product-btn');
+                if (deleteBtn) deleteBtn.style.display = 'block';
+                
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
@@ -3829,6 +3838,59 @@ document.addEventListener('DOMContentLoaded', () => {
     btnReturnToAddProduct.addEventListener('click', () => {
         goBack();
     });
+
+    // Lógica para o botão "Deletar Produto"
+    const deleteProductBtn = document.getElementById('delete-product-btn');
+    if (deleteProductBtn) {
+        deleteProductBtn.addEventListener('click', async () => {
+            const productId = document.getElementById('product-id').value;
+            
+            if (!productId) {
+                alert('Nenhum produto selecionado para deletar.');
+                return;
+            }
+            
+            const products = getFromLocalStorage('products');
+            const product = products.find(p => p.id == productId);
+            
+            if (!product) {
+                alert('Produto não encontrado.');
+                return;
+            }
+            
+            const confirmDelete = confirm(`Tem certeza que deseja deletar "${product.name}" de ${product.market}?\n\nEsta ação não pode ser desfeita.`);
+            
+            if (!confirmDelete) return;
+            
+            try {
+                // Deletar do Firestore se tiver ID do Firebase
+                if (product.firebaseId) {
+                    await deleteDoc(doc(db, 'products', product.firebaseId));
+                    console.log('🗑️ Produto deletado do Firestore:', product.firebaseId);
+                }
+                
+                // Deletar do localStorage
+                const updatedProducts = products.filter(p => p.id != productId);
+                saveToLocalStorage('products', updatedProducts);
+                
+                // Resetar formulário e voltar para modo adicionar
+                resetFormToAddMode();
+                
+                // Atualizar a lista de produtos
+                renderProducts(updatedProducts);
+                updateFilterOptions();
+                updateCounts();
+                
+                alert(`✅ Produto "${product.name}" deletado com sucesso!`);
+                
+                console.log('🗑️ Produto deletado:', product.name);
+                
+            } catch (error) {
+                console.error('Erro ao deletar produto:', error);
+                alert('❌ Erro ao deletar produto. Tente novamente.');
+            }
+        });
+    }
 
     // Configurar o comportamento inicial da tab
     tabAddProductBtn.click();
