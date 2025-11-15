@@ -2927,6 +2927,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const productsTabContent = document.getElementById('tab-view-products');
     const adminContainer = document.querySelector('.admin-container');
 
+    // Navigation history system
+    const navigationHistory = [];
+    const pushNavigationHistory = (tabId) => {
+        // Não adicionar ao histórico se for a mesma aba
+        if (navigationHistory.length > 0 && navigationHistory[navigationHistory.length - 1] === tabId) {
+            return;
+        }
+        navigationHistory.push(tabId);
+        console.log('📚 Histórico de navegação:', navigationHistory);
+    };
+
+    const goBack = () => {
+        // Remove a aba atual do histórico
+        if (navigationHistory.length > 0) {
+            navigationHistory.pop();
+        }
+        
+        // Volta para a aba anterior
+        if (navigationHistory.length > 0) {
+            const previousTab = navigationHistory[navigationHistory.length - 1];
+            const previousButton = document.querySelector(`[data-tab="${previousTab}"]`);
+            if (previousButton) {
+                // Remove do histórico antes de clicar para evitar duplicação
+                navigationHistory.pop();
+                previousButton.click();
+                console.log('⬅️ Voltando para:', previousTab);
+            }
+        } else {
+            // Se não houver histórico, volta para a primeira aba
+            tabAddProductBtn.click();
+            console.log('⬅️ Voltando para aba inicial (sem histórico)');
+        }
+    };
+
     // Compact view handling
     const COMPACT_KEY = 'products_compact_view';
     const isCompact = () => localStorage.getItem(COMPACT_KEY) === 'true';
@@ -3566,6 +3600,9 @@ document.addEventListener('DOMContentLoaded', () => {
             button.classList.add('active');
             document.getElementById(button.dataset.tab).style.display = 'block';
 
+            // Adicionar ao histórico de navegação
+            pushNavigationHistory(button.dataset.tab);
+
             // Limpar campo de imagem ao trocar para aba de adicionar produto
             if (button.dataset.tab === 'tab-add-product') {
                 const imageInput = document.getElementById('product-image');
@@ -3734,7 +3771,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Lógica para o novo botão "Voltar"
     btnReturnToAddProduct.addEventListener('click', () => {
-        tabAddProductBtn.click();
+        goBack();
     });
 
     // Configurar o comportamento inicial da tab
