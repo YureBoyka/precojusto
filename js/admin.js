@@ -2740,6 +2740,19 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // API KEY do SerpAPI (gravada no código)
     const SERPAPI_KEY = "d27f53a7fa18f2cda6c4dd5a929c0f9f9c7d3e4a1a3ac8b5c00d38f6f2f03d62";
+    const getSerpApiKey = () => {
+        try {
+            const saved = localStorage.getItem('serpapi_key');
+            return (saved && saved.trim()) ? saved.trim() : SERPAPI_KEY;
+        } catch (_) {
+            return SERPAPI_KEY;
+        }
+    };
+
+    const capitalizeFirst = (s) => {
+        if (!s) return s;
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    };
 
     // Elementos do DOM
     const productForm = document.getElementById('product-form');
@@ -3642,40 +3655,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
             productSearchResults.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:24px; color:#16a34a;"></i><p style="margin-top:10px;">Buscando produtos...</p></div>';
 
+            const apiKey = getSerpApiKey();
+            if (!apiKey) {
+                productSearchResults.innerHTML = '<div style="text-align:center; padding:24px; color:#b45309; background:#fffbeb; border:1px solid #f59e0b; border-radius:8px;">\
+                    <p style="margin:0 0 6px 0; font-weight:600;">Chave SerpAPI não definida</p>\
+                    <p style="margin:0 0 10px 0; font-size:13px;">Defina a chave na seção "Selecionar Imagem do Google" clicando em Salvar.</p>\
+                    <a href="https://serpapi.com/manage-api-key" target="_blank" style="color:#2563eb; text-decoration:underline;">Obter chave SerpAPI</a>\
+                </div>';
+                return;
+            }
+
             try {
-                const response = await fetch(`https://serpapi.com/search.json?engine=google_shopping&q=${encodeURIComponent(searchTerm)}&api_key=${SERPAPI_KEY}&gl=pt&hl=pt`);
+                const url = `https://serpapi.com/search.json?engine=google_shopping&q=${encodeURIComponent(searchTerm)}&api_key=${apiKey}&gl=pt&hl=pt-PT&google_domain=google.pt&location=${encodeURIComponent('Portugal')}`;
+                const response = await fetch(url);
                 const data = await response.json();
 
-                if (data.shopping_results && data.shopping_results.length > 0) {
-                    productSearchResults.innerHTML = data.shopping_results.slice(0, 10).map(product => `
-                        <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:12px; display:flex; gap:12px; align-items:start; cursor:pointer; transition:all 0.2s;" class="product-result-item" data-product='${JSON.stringify({
+                if (!response.ok || data.error) {
+                    const msg = data.error || `Erro HTTP ${response.status}`;
+                    productSearchResults.innerHTML = `<div style="text-align:center; padding:24px; color:#dc2626;">\
+                        <p style=\"margin:0 0 6px 0; font-weight:600;\">Erro ao buscar produtos</p>\
+                        <p style=\"margin:0 0 10px 0; font-size:13px;\">${msg}</p>\
+                        <a href=\"https://www.google.pt/search?tbm=shop&q=${encodeURIComponent(searchTerm)}\" target=\"_blank\" style=\"color:#2563eb; text-decoration:underline;\">Abrir no Google Shopping</a>\
+                    </div>`;
+                    return;
+                }
+
+                const results = Array.isArray(data.shopping_results) ? data.shopping_results : [];
+                if (results.length > 0) {
+                    productSearchResults.innerHTML = results.slice(0, 12).map(product => {
+                        const extractedPrice = (typeof product.extracted_price === 'number') ? product.extracted_price : null;
+                        const priceText = product.price || (extractedPrice ? `€ ${extractedPrice.toFixed(2)}` : 'Preço não disponível');
+                        const safePayload = {
                             name: product.title,
-                            price: product.extracted_price || 0,
-                            source: product.source
-                        })}'>
-                            ${product.thumbnail ? `<img src="${product.thumbnail}" style="width:80px; height:80px; object-fit:contain; border-radius:6px; border:1px solid #e5e7eb;">` : ''}
-                            <div style="flex:1;">
-                                <h4 style="margin:0 0 6px 0; font-size:14px; color:#1f2937; font-weight:600;">${product.title}</h4>
-                                <p style="margin:0 0 4px 0; font-size:13px; color:#16a34a; font-weight:bold;">${product.price || 'Preço não disponível'}</p>
-                                <p style="margin:0; font-size:12px; color:#6b7280;"><i class="fas fa-store"></i> ${product.source}</p>
+                            price: extractedPrice || 0,
+                            source: product.source || (product.seller || '')
+                        };
+                        return `
+                        <div style=\"border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:12px; display:flex; gap:12px; align-items:start; cursor:pointer; transition:all 0.2s;\" class=\"product-result-item\" data-product='${JSON.stringify(safePayload)}'>
+                            ${product.thumbnail ? `<img src=\"${product.thumbnail}\" style=\"width:80px; height:80px; object-fit:contain; border-radius:6px; border:1px solid #e5e7eb;\">` : ''}
+                            <div style=\"flex:1;\">
+                                <h4 style=\"margin:0 0 6px 0; font-size:14px; color:#1f2937; font-weight:600;\">${product.title}</h4>
+                                <p style=\"margin:0 0 4px 0; font-size:13px; color:#16a34a; font-weight:bold;\">${priceText}</p>
+                                <p style=\"margin:0; font-size:12px; color:#6b7280;\"><i class=\"fas fa-store\"></i> ${product.source || product.seller || 'Loja não informada'}</p>
                             </div>
-                            <button style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; white-space:nowrap;">
-                                <i class="fas fa-check"></i> Usar
+                            <button style=\"background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; white-space:nowrap;\">
+                                <i class=\"fas fa-check\"></i> Usar
                             </button>
-                        </div>
-                    `).join('');
+                        </div>`;
+                    }).join('');
 
                     // Event listeners para os resultados
                     document.querySelectorAll('.product-result-item').forEach(item => {
-                        item.addEventListener('click', (e) => {
+                        item.addEventListener('click', () => {
                             const productData = JSON.parse(item.dataset.product);
-                            
+
                             // Preencher formulário
-                            document.getElementById('product-name').value = productData.name;
-                            document.getElementById('product-price').value = productData.price;
-                            
+                            const nameField = document.getElementById('product-name');
+                            nameField.value = capitalizeFirst(productData.name || '');
+                            document.getElementById('product-price').value = productData.price || '';
+
                             // Tentar identificar o mercado
-                            const source = productData.source.toLowerCase();
+                            const source = (productData.source || '').toLowerCase();
                             const marketMapping = {
                                 'continente': 'Continente',
                                 'pingo doce': 'Pingo Doce',
@@ -3685,9 +3725,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 'auchan': 'Auchan',
                                 'minipreço': 'Minipreço',
                                 'minipreco': 'Minipreço',
-                                'mercadona': 'Mercadona'
+                                'mercadona': 'Mercadona',
+                                'recheio': 'Recheio',
+                                'makro': 'Makro'
                             };
-                            
+
                             let marketFound = false;
                             for (const [key, value] of Object.entries(marketMapping)) {
                                 if (source.includes(key)) {
@@ -3696,22 +3738,26 @@ document.addEventListener('DOMContentLoaded', () => {
                                     break;
                                 }
                             }
-                            
+
                             if (!marketFound) {
                                 document.getElementById('product-market').value = 'Outro';
-                                document.getElementById('custom-market-name').value = productData.source;
+                                document.getElementById('custom-market-name').value = productData.source || '';
                                 document.getElementById('custom-market-name').style.display = 'block';
                             }
-                            
+
                             // Fechar modal
                             productSearchModal.style.display = 'none';
                             document.body.classList.remove('admin-google-image-modal-open');
-                            
+
                             alert('✅ Dados do produto preenchidos! Confira e ajuste se necessário.');
                         });
                     });
                 } else {
-                    productSearchResults.innerHTML = '<div style="text-align:center; padding:40px; color:#6b7280;"><i class="fas fa-search" style="font-size:48px; opacity:0.3;"></i><p style="margin-top:12px;">Nenhum produto encontrado</p></div>';
+                    productSearchResults.innerHTML = `<div style=\"text-align:center; padding:24px; color:#6b7280;\">\
+                        <i class=\"fas fa-search\" style=\"font-size:42px; opacity:0.35;\"></i>\
+                        <p style=\"margin-top:10px;\">Nenhum produto encontrado</p>\
+                        <a href=\"https://www.google.pt/search?tbm=shop&q=${encodeURIComponent(searchTerm)}\" target=\"_blank\" style=\"color:#2563eb; text-decoration:underline;\">Abrir no Google Shopping</a>\
+                    </div>`;
                 }
             } catch (error) {
                 console.error('Erro ao buscar produtos:', error);
