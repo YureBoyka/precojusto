@@ -71,6 +71,9 @@ function setupFirestoreListeners() {
             const cheapestPrice = productPrices.length > 0 ? Math.min(...productPrices.map(p => p.price)) : product.price || '0.00';
             const cheapestMarket = productPrices.length > 0 ? productPrices.find(p => p.price === cheapestPrice).supermarket : 'Desconhecido';
             
+            // Construir unidade completa: quantidade + unidade de medida
+            const fullUnit = product.unit ? `${product.quantity || '1'} ${product.unit}` : (product.quantity || '1') + ' unidade';
+            
             return {
                 id: product.id,
                 name: product.name || 'Produto sem nome',
@@ -80,8 +83,9 @@ function setupFirestoreListeners() {
                 category: product.category || 'Geral',
                 imageUrl: product.imageUrl || product.image || "https://png.pngtree.com/png-vector/20241025/ourmid/png-tree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png",
                 barcode: product.barcode || '',
-                unit: product.unit || '',
-                country: product.country || ''
+                unit: fullUnit,
+                country: product.zone || '',
+                quantity: product.quantity || '1'
             };
         });
         
@@ -127,6 +131,9 @@ function handleProductsSnapshot(snapshot) {
         const cheapestPrice = productPrices.length > 0 ? Math.min(...productPrices.map(p => p.price)) : product.price || '0.00';
         const cheapestMarket = productPrices.length > 0 ? productPrices.find(p => p.price === cheapestPrice).supermarket : 'Desconhecido';
         
+        // Construir unidade completa: quantidade + unidade de medida
+        const fullUnit = product.unit ? `${product.quantity || '1'} ${product.unit}` : (product.quantity || '1') + ' unidade';
+        
         return {
             id: product.id,
             name: product.name || 'Produto sem nome',
@@ -136,8 +143,9 @@ function handleProductsSnapshot(snapshot) {
             category: product.category || 'Geral',
             imageUrl: product.imageUrl || product.image || "https://png.pngtree.com/png-vector/20241025/ourmid/png-tree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png",
             barcode: product.barcode || '',
-            unit: product.unit || '',
-            country: product.country || ''
+            unit: fullUnit,
+            country: product.zone || '',
+            quantity: product.quantity || '1'
         };
     });
     
