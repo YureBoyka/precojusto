@@ -1,23 +1,23 @@
 // ============ DECLARE initializeAppData FIRST ============
 function initializeAppData() {
     console.log("Initializing app data...");
-    // loadProducts removido - já é carregado pelo firebase-loader.js
+    // loadProducts removido - jï¿½ ï¿½ carregado pelo firebase-loader.js
     updateCartBadge();
     loadSearchHistory();
     loadFavorites();
     populateFilters();
     
-    // Renderizar produtos do localStorage (já carregados pelo firebase-loader)
+    // Renderizar produtos do localStorage (jï¿½ carregados pelo firebase-loader)
     if (typeof window.renderProducts === 'function') {
         window.renderProducts();
         console.log('? Produtos renderizados no initializeAppData');
     }
 }
 
-// Função para popular os filtros (chama updateFilterOptions quando disponível)
+// Funï¿½ï¿½o para popular os filtros (chama updateFilterOptions quando disponï¿½vel)
 function populateFilters() {
     console.log('?? Populando filtros...');
-    // updateFilterOptions será chamado dentro do DOMContentLoaded
+    // updateFilterOptions serï¿½ chamado dentro do DOMContentLoaded
     setTimeout(() => {
         if (typeof updateFilterOptions === 'function') {
             updateFilterOptions();
@@ -26,9 +26,9 @@ function populateFilters() {
     }, 100);
 }
 
-// Função para carregar histórico de pesquisa
+// Funï¿½ï¿½o para carregar histï¿½rico de pesquisa
 function loadSearchHistory() {
-    console.log('?? Carregando histórico de pesquisa...');
+    console.log('?? Carregando histï¿½rico de pesquisa...');
     setTimeout(() => {
         if (typeof renderSearchHistory === 'function') {
             renderSearchHistory();
@@ -36,7 +36,7 @@ function loadSearchHistory() {
     }, 100);
 }
 
-// Função para carregar favoritos
+// Funï¿½ï¿½o para carregar favoritos
 function loadFavorites() {
     console.log('? Carregando favoritos...');
     setTimeout(() => {
@@ -46,7 +46,7 @@ function loadFavorites() {
     }, 100);
 }
 
-// Função para atualizar badge do carrinho
+// Funï¿½ï¿½o para atualizar badge do carrinho
 function updateCartBadge() {
     console.log('?? Atualizando badge do carrinho...');
     const cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
     const clearHistoryBtn = document.getElementById('clear-history');
     const closeFavoritesBottomBtn = document.getElementById('close-favorites-bottom');
     console.log('Variaveis do DOM declaradas. closeModalBtns:', closeModalBtns);
-    // Elementos do modal de sugestão
+    // Elementos do modal de sugestï¿½o
     const modalSuggestionForm = document.getElementById('modal-suggestion-form');
     const modalSuggestionProductName = document.getElementById('modal-suggestion-product-name');
     const modalSuggestionMarket = document.getElementById('modal-suggestion-market');
@@ -101,13 +101,13 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
     const prevBtn = productsSection.querySelector('.prev-btn');
     const nextBtn = productsSection.querySelector('.next-btn');
 
-    // Funções de Utilitários
-    // Para dados que devem persistir (produtos, sugestões)
+    // Funï¿½ï¿½es de Utilitï¿½rios
+    // Para dados que devem persistir (produtos, sugestï¿½es)
     const saveToLocalStorage = (key, data) => {
         localStorage.setItem(key, JSON.stringify(data));
     };
 
-    // Limpar campo de pesquisa quando o botão for clicado
+    // Limpar campo de pesquisa quando o botï¿½o for clicado
     if (clearSearchBtn && productSearchBar) {
         clearSearchBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         });
     }
 
-    // CLONE EXATO - Limpar campo de pesquisa por código de barras
+    // CLONE EXATO - Limpar campo de pesquisa por cï¿½digo de barras
     const clearBarcodeSearchBtn = document.getElementById('clear-barcode-search');
     const barcodeSearchBar = document.getElementById('barcode-search-bar');
     
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         });
     }
 
-    // Mostrar dropdown de histórico ao digitar (com itens filtrados)
+    // Mostrar dropdown de histï¿½rico ao digitar (com itens filtrados)
     const showHistoryDropdown = (query) => {
         if (!historyDropdown) return;
         const history = getFromSessionStorage('searchHistory');
@@ -183,10 +183,10 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         return data ? JSON.parse(data) : [];
     };
     
-    // Tornar disponível globalmente
+    // Tornar disponï¿½vel globalmente
     window.getFromLocalStorage = getFromLocalStorage;
     
-    // Para dados da sessão do utilizador (carrinho, favoritos, histórico)
+    // Para dados da sessï¿½o do utilizador (carrinho, favoritos, histï¿½rico)
     const saveToSessionStorage = (key, data) => {
         sessionStorage.setItem(key, JSON.stringify(data));
     };
@@ -197,15 +197,15 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         return data ? JSON.parse(data) : [];
     };
     
-    // Tornar disponível globalmente
+    // Tornar disponï¿½vel globalmente
     window.getFromSessionStorage = getFromSessionStorage;
 
 
     const formatPrice = (price) => {
-        return `€ ${parseFloat(price).toFixed(2)}`;
+        return `ï¿½ ${parseFloat(price).toFixed(2)}`;
     };
 
-    // Função para gerir a visibilidade dos botões de scroll
+    // Funï¿½ï¿½o para gerir a visibilidade dos botï¿½es de scroll
     const manageScrollButtons = () => {
         if (!scrollContainer || !prevBtn || !nextBtn) return;
 
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         nextBtn.style.display = scrollContainer.scrollLeft < maxScrollLeft - 1 ? 'flex' : 'none';
     };
 
-    // Criação do card de produto para a exibição principal
+    // Criaï¿½ï¿½o do card de produto para a exibiï¿½ï¿½o principal
     const createProductCard = (product, isFavorite = false) => {
         const productCard = document.createElement('div');
             productCard.classList.add('product-card', 'new-product-card');
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
                 <button class="add-to-cart-btn" data-id="${product.id}" title="Adicionar ao Carrinho">
                     <i class="fas fa-shopping-cart"></i>
                 </button>
-                <button class="suggest-price-btn" data-id="${product.id}" title="Sugerir um novo preço">
+                <button class="suggest-price-btn" data-id="${product.id}" title="Sugerir um novo preï¿½o">
                     <i class="fas fa-edit"></i>
                 </button>
             </div>
@@ -296,24 +296,27 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         const products = getFromLocalStorage('products');
         const p = products.find(x => String(x.id) === String(productId));
         if (!p) return;
+        const formattedUnit = (p.unitDisplay || [p.quantity, p.unit].filter(Boolean).join(' ')).replace(/\s+/g, ' ').trim();
+        const unitLabel = formattedUnit || 'N/A';
+        const countryLabel = (p.country || p.zone || '').trim() || 'N/A';
         console.log('?? DEBUG - Produto selecionado:', p);
-        console.log('?? DEBUG - Campos:', { unit: p.unit, country: p.country, barcode: p.barcode });
+        console.log('?? DEBUG - Campos:', { unit: p.unit, quantity: p.quantity, unitDisplay: p.unitDisplay, country: p.country || p.zone, barcode: p.barcode });
         detailImage.src = p.imageUrl || DEFAULT_IMAGE_URL;
         detailName.textContent = p.name;
         detailPrice.textContent = formatPrice(p.price);
         detailMeta.innerHTML = `
-            <div><strong>Código de Barras:</strong> <code style="background:#f0f8ff;padding:2px 6px;border-radius:4px;font-family:monospace;">${p.barcode || 'N/A'}</code></div>
-            <div><strong>Mercado:</strong> ${p.market || '—'}</div>
-            <div><strong>Marca:</strong> ${p.brand || '—'}</div>
-            <div><strong>Categoria:</strong> ${p.category || '—'}</div>
-            <div><strong>Unidade:</strong> ${p.unit || 'N/A'}</div>
-            <div><strong>País:</strong> ${p.country || 'N/A'}</div>
+            <div><strong>Cï¿½digo de Barras:</strong> <code style="background:#f0f8ff;padding:2px 6px;border-radius:4px;font-family:monospace;">${p.barcode || 'N/A'}</code></div>
+            <div><strong>Mercado:</strong> ${p.market || 'ï¿½'}</div>
+            <div><strong>Marca:</strong> ${p.brand || 'ï¿½'}</div>
+            <div><strong>Categoria:</strong> ${p.category || 'ï¿½'}</div>
+            <div><strong>Unidade:</strong> ${unitLabel}</div>
+            <div><strong>Paï¿½s:</strong> ${countryLabel}</div>
             ${p.zone ? `<div><strong>Zona:</strong> ${p.zone}</div>` : ''}
             ${p.parish ? `<div><strong>Freguesia:</strong> ${p.parish}</div>` : ''}
         `;
         detailDescription.textContent = p.description || '';
         
-        // Mostrar/ocultar seção de descrição
+        // Mostrar/ocultar seï¿½ï¿½o de descriï¿½ï¿½o
         const descriptionContainer = document.getElementById('detail-description-container');
         if (p.description && p.description.trim()) {
             descriptionContainer.style.display = 'block';
@@ -353,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
 
     if (closeProductDetailBtn) closeProductDetailBtn.addEventListener('click', () => closeModal(productDetailModal));
 
-    // Criação do item de lista para os modais (carrinho e favoritos)
+    // Criaï¿½ï¿½o do item de lista para os modais (carrinho e favoritos)
     const createModalListItem = (product, isCartItem = false) => {
         const listItem = document.createElement('div');
         listItem.classList.add('modal-list-item');
@@ -384,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
     };
 
 
-    // Renderização dos Produtos na tela principal
+    // Renderizaï¿½ï¿½o dos Produtos na tela principal
     const renderProducts = (productsToRender = getFromLocalStorage('products')) => {
         productsList.innerHTML = '';
         if (productsToRender.length === 0) {
@@ -401,11 +404,11 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
                 productsList.appendChild(productCard);
             });
         }
-        // Garante que o estado dos botões é verificado após a renderização
+        // Garante que o estado dos botï¿½es ï¿½ verificado apï¿½s a renderizaï¿½ï¿½o
         setTimeout(manageScrollButtons, 100);
     };
     
-    // Tornar renderProducts disponível globalmente para firebase-loader.js
+    // Tornar renderProducts disponï¿½vel globalmente para firebase-loader.js
     window.renderProducts = renderProducts;
 
     // Compare modal helpers
@@ -433,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             } catch (err) { /* ignore regex errors */ }
         }
         // remove common separators and extra qualifiers like 'marca', 'pack', weight units etc.
-        n = n.replace(/[-–—_|\/]/g, ' ');
+        n = n.replace(/[-ï¿½ï¿½_|\/]/g, ' ');
         n = n.replace(/marca\s+\w+/ig, '');
         n = n.replace(/\b(kg|g|ml|l|un|unidade|pacote|pack|saco|frasco)\b/ig, '');
         // remove extra punctuation and numbers that typically denote SKU or pack-size
@@ -515,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             if (!brand) return true;
             const b = brand.toString().toLowerCase();
             // common indicators of store brands / private labels
-            const indicators = ['marca branca', 'marca própria', 'propria', 'marca do mercado', 'marca própria', 'marca própria', 'marca de distribuidor'];
+            const indicators = ['marca branca', 'marca prï¿½pria', 'propria', 'marca do mercado', 'marca prï¿½pria', 'marca prï¿½pria', 'marca de distribuidor'];
             if (indicators.some(ind => b.includes(ind))) return true;
             // if brand is very short (like 1-2 letters) or generic, treat as private label
             if (b.length <= 2) return true;
@@ -538,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         compareTitle.textContent = `Comparar: ${productName}`;
         if (compareModal) compareModal.dataset.compareProduct = productName;
 
-    // Ordena por preço ascendente (mantém referência do mais barato já calculado)
+    // Ordena por preï¿½o ascendente (mantï¿½m referï¿½ncia do mais barato jï¿½ calculado)
     matches.sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
     const others = matches.filter(p => p !== cheapestGlobal);
 
@@ -578,11 +581,11 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         const ul = document.createElement('div');
         ul.className = 'compare-linear-list';
 
-        // Função para calcular diferença percentual em relação ao mais barato
+        // Funï¿½ï¿½o para calcular diferenï¿½a percentual em relaï¿½ï¿½o ao mais barato
         const diffPercent = (price) => {
             const base = parseFloat(cheapestGlobal.price);
             const current = parseFloat(price);
-            if (!isFinite(base) || base <= 0) return '—';
+            if (!isFinite(base) || base <= 0) return 'ï¿½';
             const pct = ((current - base) / base) * 100;
             return pct === 0 ? 'Igual' : `+${pct.toFixed(1)}%`;
         };
@@ -609,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         listWrapper.appendChild(ul);
         desktopLayout.appendChild(listWrapper);
 
-        // Se viewport > 720, usa layout desktop. Para mobile, usaremos uma versão linear simplificada.
+        // Se viewport > 720, usa layout desktop. Para mobile, usaremos uma versï¿½o linear simplificada.
         if (typeof window !== 'undefined' && window.innerWidth > 720) {
             compareList.appendChild(desktopLayout);
             openModal(compareModal);
@@ -653,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             const base = parseFloat(cheapestGlobal.price);
             const diffPct = (price) => {
                 const current = parseFloat(price);
-                if (!isFinite(base) || base <= 0) return '—';
+                if (!isFinite(base) || base <= 0) return 'ï¿½';
                 const pct = ((current - base) / base) * 100;
                 if (pct === 0) return 'Igual';
                 const str = `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
@@ -684,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             return;
         }
 
-        // ===== Mantém fluxo ANTIGO para mobile abaixo =====
+        // ===== Mantï¿½m fluxo ANTIGO para mobile abaixo =====
         privateLabel.sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
         branded.sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
         const limitedPrivateLabel = privateLabel.slice(0, 3);
@@ -752,11 +755,11 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         
         // Adicionar produtos de marca com separador
         limitedBranded.forEach((it, index) => {
-            // Adicionar separador após os primeiros 3 produtos de marca
+            // Adicionar separador apï¿½s os primeiros 3 produtos de marca
             if (index === 3 && limitedBranded.length > 3) {
                 const separator = document.createElement('div');
                 separator.className = 'compare-separator';
-                separator.innerHTML = '<hr><span>Mais opções de marca</span><hr>';
+                separator.innerHTML = '<hr><span>Mais opï¿½ï¿½es de marca</span><hr>';
                 rightGrid.appendChild(separator);
             }
             rightGrid.appendChild(makeCard(it, highestBranded2, cheapestBranded));
@@ -917,7 +920,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
                     columnsWrap.appendChild(mobileList);
                 }
             } catch (err) {
-                // if anything fails, silently continue — we still have the original columnsWrap
+                // if anything fails, silently continue ï¿½ we still have the original columnsWrap
                 console.error('Fallback to mobile list failed:', err);
             }
         }
@@ -1004,9 +1007,9 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
                         <h3 class="detail-name">${esc(p.name)}</h3>
                         <div class="detail-price">${formatPrice(p.price)}</div>
                         <div class="detail-meta">
-                            <div><strong>Mercado:</strong> ${esc(p.market || '—')}</div>
-                            <div><strong>Marca:</strong> ${esc(p.brand || '—')}</div>
-                            <div><strong>Categoria:</strong> ${esc(p.category || '—')}</div>
+                            <div><strong>Mercado:</strong> ${esc(p.market || 'ï¿½')}</div>
+                            <div><strong>Marca:</strong> ${esc(p.brand || 'ï¿½')}</div>
+                            <div><strong>Categoria:</strong> ${esc(p.category || 'ï¿½')}</div>
                             <div><strong>Unidade:</strong> ${esc(p.quantity||'')} ${esc(p.unit||'')}</div>
                         </div>
                         <p class="detail-description">${esc(p.description || '')}</p>
@@ -1081,7 +1084,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         const products = getFromLocalStorage('products');
         const recentProducts = products.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded)).slice(0, 5);
 
-        if (!recentProductsList) return; // Proteção caso o elemento não exista
+        if (!recentProductsList) return; // Proteï¿½ï¿½o caso o elemento nï¿½o exista
         
         recentProductsList.innerHTML = '';
         if (recentProducts.length === 0) {
@@ -1095,7 +1098,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         }
     };
 
-    // Lógica para Favoritos
+    // Lï¿½gica para Favoritos
     const renderFavorites = () => {
         const favorites = getFromSessionStorage('favorites');
         favoritesList.innerHTML = '';
@@ -1110,7 +1113,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         }
     };
 
-    // Lógica para o Histórico de Pesquisa
+    // Lï¿½gica para o Histï¿½rico de Pesquisa
     const renderSearchHistory = () => {
         const history = getFromSessionStorage('searchHistory');
         searchHistoryList.innerHTML = '';
@@ -1146,7 +1149,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         });
     };
 
-    // Lógica para o Carrinho de Compras
+    // Lï¿½gica para o Carrinho de Compras
     const updateCartTotal = () => {
         const cart = getFromSessionStorage('cart');
         const total = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
@@ -1177,7 +1180,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
 
         Object.keys(groups).forEach(market => {
             const items = groups[market];
-            // Cabeçalho do mercado
+            // Cabeï¿½alho do mercado
             const marketHeader = document.createElement('div');
             marketHeader.className = 'cart-market-header';
             marketHeader.innerHTML = `<h4 class="market-name">${market}</h4>`;
@@ -1209,9 +1212,9 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         cartTotalElement.textContent = formatPrice(grandTotal);
     };
 
-    // Lógica de Filtros e Busca
+    // Lï¿½gica de Filtros e Busca
     const filterProducts = () => {
-        const products = getFromLocalStorage('products'); // Os produtos base vêm do localStorage
+        const products = getFromLocalStorage('products'); // Os produtos base vï¿½m do localStorage
         
         // Pegar o termo de pesquisa de ambos os campos
         const nameSearchTerm = productSearchBar.value.toLowerCase();
@@ -1249,7 +1252,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         }
     };
 
-    // Função específica para pesquisa por código de barras
+    // Funï¿½ï¿½o especï¿½fica para pesquisa por cï¿½digo de barras
     const filterProductsByBarcode = (barcodeQuery) => {
         const products = getFromLocalStorage('products');
         const marketValue = marketFilter.value;
@@ -1290,7 +1293,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         categoryFilter.innerHTML = `<option value="">Todas as Categorias</option>${categories.map(c => `<option value="${c}">${c}</option>`).join('')}`;
     };
     
-    // Tornar disponível globalmente
+    // Tornar disponï¿½vel globalmente
     window.updateFilterOptions = updateFilterOptions;
 
     // Helper to display last searched term
@@ -1302,7 +1305,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             sessionStorage.removeItem('lastSearched');
             return;
         }
-        lastSearchedEl.textContent = `Última: ${term}`;
+        lastSearchedEl.textContent = `ï¿½ltima: ${term}`;
         saveToSessionStorage('lastSearched', term);
     };
 
@@ -1319,7 +1322,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             showHistoryDropdown(q);
         }
     });
-    // Ao pressionar Enter no campo de pesquisa, salvar no histórico e mostrar seção
+    // Ao pressionar Enter no campo de pesquisa, salvar no histï¿½rico e mostrar seï¿½ï¿½o
     productSearchBar.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -1329,7 +1332,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
                 // evita duplicados recentes
                 history = history.filter(h => h.toLowerCase() !== term.toLowerCase());
                 history.unshift(term);
-                // mantém apenas últimos 10
+                // mantï¿½m apenas ï¿½ltimos 10
                 history = history.slice(0, 10);
                 saveToSessionStorage('searchHistory', history);
                 renderSearchHistory();
@@ -1344,7 +1347,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         }
     });
 
-    // CLONE EXATO - Eventos para campo de código de barras
+    // CLONE EXATO - Eventos para campo de cï¿½digo de barras
     barcodeSearchBar.addEventListener('input', (e) => {
         const q = e.target.value || '';
         if (!q.trim()) {
@@ -1359,7 +1362,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         }
     });
     
-    // CLONE EXATO - Ao pressionar Enter no campo de código de barras
+    // CLONE EXATO - Ao pressionar Enter no campo de cï¿½digo de barras
     barcodeSearchBar.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -1369,7 +1372,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
                 // evita duplicados recentes
                 history = history.filter(h => h.toLowerCase() !== term.toLowerCase());
                 history.unshift(term);
-                // mantém apenas últimos 10
+                // mantï¿½m apenas ï¿½ltimos 10
                 history = history.slice(0, 10);
                 saveToSessionStorage('searchHistory', history);
                 renderSearchHistory();
@@ -1388,7 +1391,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
     brandFilter.addEventListener('change', filterProducts);
     categoryFilter.addEventListener('change', filterProducts);
 
-    // Ao clicar em um card de produto (fora dos botões), abrir modal de detalhe
+    // Ao clicar em um card de produto (fora dos botï¿½es), abrir modal de detalhe
     productsList.addEventListener('click', (e) => {
         const card = e.target.closest('.product-card');
         if (!card) return;
@@ -1397,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         if (id) openProductDetail(id);
     });
 
-    // Botão de pesquisar (se for adicionado futuramente): caso exista, faz mesma ação do Enter
+    // Botï¿½o de pesquisar (se for adicionado futuramente): caso exista, faz mesma aï¿½ï¿½o do Enter
     const searchButton = document.getElementById('search-button');
     if (searchButton) {
         searchButton.addEventListener('click', (e) => {
@@ -1419,7 +1422,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         });
     }
 
-    // CLONE EXATO - Botão de pesquisar por código de barras
+    // CLONE EXATO - Botï¿½o de pesquisar por cï¿½digo de barras
     const barcodeSearchButton = document.getElementById('barcode-search-button');
     if (barcodeSearchButton) {
         barcodeSearchButton.addEventListener('click', (e) => {
@@ -1441,7 +1444,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         });
     }
 
-    // Limpar histórico de pesquisa
+    // Limpar histï¿½rico de pesquisa
     if (clearHistoryBtn) {
         clearHistoryBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -1503,14 +1506,14 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             modalSuggestionProductId.value = product.id;
             modalSuggestionProductName.value = product.name || '';
             modalSuggestionMarket.value = product.market || '';
-                // zona removida: apenas preço editável conforme solicitado
-            // Apenas o campo de preço fica editável - os demais permanecem disabled no HTML
+                // zona removida: apenas preï¿½o editï¿½vel conforme solicitado
+            // Apenas o campo de preï¿½o fica editï¿½vel - os demais permanecem disabled no HTML
             modalSuggestionNewPrice.value = product.price ? parseFloat(product.price).toFixed(2) : '';
             openModal(suggestionModal);
         }
     });
 
-    // Eventos específicos dos modais
+    // Eventos especï¿½ficos dos modais
     cartItemsList.addEventListener('click', (e) => {
         const targetBtn = e.target.closest('button');
         if (!targetBtn) return;
@@ -1550,10 +1553,10 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         favorites = favorites.filter(fav => fav.id != productId);
         saveToSessionStorage('favorites', favorites);
         renderFavorites();
-        renderProducts(); // Atualiza a tela principal para desmarcar o coração
+        renderProducts(); // Atualiza a tela principal para desmarcar o coraï¿½ï¿½o
     });
 
-    // Evento de submissão do formulário de sugestão
+    // Evento de submissï¿½o do formulï¿½rio de sugestï¿½o
     modalSuggestionForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
@@ -1563,7 +1566,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
     const suggestedPrice = modalSuggestionNewPrice.value;
         
         if (!suggestedPrice) {
-            alert('Por favor, insira um preço válido.');
+            alert('Por favor, insira um preï¿½o vï¿½lido.');
             return;
         }
 
@@ -1576,16 +1579,16 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             date: new Date().toISOString()
         };
 
-        const suggestions = getFromLocalStorage('suggestions'); // Sugestões persistem
+        const suggestions = getFromLocalStorage('suggestions'); // Sugestï¿½es persistem
         suggestions.push(newSuggestion);
         saveToLocalStorage('suggestions', suggestions); // Salva no localStorage
 
-    alert('Sua sugestão foi enviada com sucesso e será analisada pela administração!');
+    alert('Sua sugestï¿½o foi enviada com sucesso e serï¿½ analisada pela administraï¿½ï¿½o!');
     closeModal(suggestionModal);
         modalSuggestionForm.reset();
     });
 
-    // Funções para bloquear/desbloquear scroll da página
+    // Funï¿½ï¿½es para bloquear/desbloquear scroll da pï¿½gina
     const lockBodyScroll = () => {
         const scrollY = window.scrollY;
         document.body.style.position = 'fixed';
@@ -1604,11 +1607,11 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
     };
 
     // Abrir modais
-    // Helpers para abrir/fechar com animação
+    // Helpers para abrir/fechar com animaï¿½ï¿½o
     const openModal = (modal) => {
         if (!modal) return;
         
-        // Bloquear scroll da página
+        // Bloquear scroll da pï¿½gina
         lockBodyScroll();
         
         modal.classList.remove('closing');
@@ -1625,12 +1628,12 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         modal.classList.remove('visible');
         modal.classList.add('closing');
         
-        // aguarda animação antes de esconder e desbloquear scroll
+        // aguarda animaï¿½ï¿½o antes de esconder e desbloquear scroll
         setTimeout(() => {
             modal.classList.remove('show', 'closing');
             modal.style.display = 'none';
             
-            // Desbloquear scroll da página
+            // Desbloquear scroll da pï¿½gina
             unlockBodyScroll(); console.log('? Modal fechado completamente:', modal.id);
         }, 240);
     };
@@ -1647,12 +1650,12 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         renderFavorites();
     });
 
-    // Fechar modais com animação
+    // Fechar modais com animaï¿½ï¿½o
     console.log('?? Registrando event listeners dos modais - closeModalBtns:', closeModalBtns);
     closeModalBtns.forEach(btn => {
-        console.log('?? Registrando listener para botão:', btn);
+        console.log('?? Registrando listener para botï¿½o:', btn);
         btn.addEventListener('click', () => {
-            console.log('? Botão de fechar clicado!');
+            console.log('? Botï¿½o de fechar clicado!');
             const modal = btn.closest('.modal');
             console.log('?? Modal encontrado:', modal);
             closeModal(modal);
@@ -1665,7 +1668,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         closeModal(cartModal);
     });
 
-    // Fechar modais clicando fora (backdrop) - genérico para qualquer modal
+    // Fechar modais clicando fora (backdrop) - genï¿½rico para qualquer modal
     console.log('?? Registrando listener para clique fora do modal');
     window.addEventListener('click', (e) => {
         try {
@@ -1674,12 +1677,12 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
                 closeModal(e.target);
             }
         } catch (err) {
-            // segurança contra ambientes inesperados
+            // seguranï¿½a contra ambientes inesperados
             console.error('Erro ao avaliar clique no backdrop do modal:', err);
         }
     });
 
-    // Lógica para os botões de scroll da lista de produtos
+    // Lï¿½gica para os botï¿½es de scroll da lista de produtos
     if (scrollContainer && prevBtn && nextBtn) {
         const scrollAmount = 300; 
 
@@ -1707,7 +1710,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         renderRecentProducts();
     });
 
-    // Inicialização
+    // Inicializaï¿½ï¿½o
     updateFilterOptions();
     renderProducts();
     renderFavorites();
@@ -1719,25 +1722,25 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         if (saved && typeof setLastSearched === 'function') setLastSearched(saved);
     } catch (initErr) { /* ignore */ }
 
-    // Handler para CTA de código de barras: abrir scanner sem focar input para evitar teclado móvel
+    // Handler para CTA de cï¿½digo de barras: abrir scanner sem focar input para evitar teclado mï¿½vel
     const barcodeBtn = document.getElementById('barcode-search-btn');
     if (barcodeBtn) {
         barcodeBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            // Evitar que algum input permaneça focado
+            // Evitar que algum input permaneï¿½a focado
             try {
                 if (document.activeElement && document.activeElement !== document.body) {
                     document.activeElement.blur();
                 }
             } catch(_) {}
-            // Usar implementação central
+            // Usar implementaï¿½ï¿½o central
             if (typeof window.openBarcodeScanner === 'function') {
                 window.openBarcodeScanner();
             }
         });
     }
 
-    // Scanner de código de barras (usa BarcodeDetector quando disponível)
+    // Scanner de cï¿½digo de barras (usa BarcodeDetector quando disponï¿½vel)
     const scannerModal = document.getElementById('scanner-modal');
     const barcodeScannerEl = document.getElementById('barcode-scanner');
     const scannerMessage = document.getElementById('scanner-message');
@@ -1752,7 +1755,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
     let html5QrCode = null;
     let html5QrCodeRunning = false;
 
-    // Beep curto ao ler um código
+    // Beep curto ao ler um cï¿½digo
     const playBeep = () => {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1769,7 +1772,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         } catch(_) {}
     };
 
-    // Toast helper para feedback rápido
+    // Toast helper para feedback rï¿½pido
     const getToastContainer = () => {
         let c = document.getElementById('toast-container');
         if (!c) {
@@ -1790,9 +1793,9 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         toast.className = `toast toast-${type}`;
         toast.textContent = message;
         container.appendChild(toast);
-        // animação de entrada
+        // animaï¿½ï¿½o de entrada
         requestAnimationFrame(() => toast.classList.add('show'));
-        // saída e remoção
+        // saï¿½da e remoï¿½ï¿½o
         setTimeout(() => {
             toast.classList.remove('show');
             toast.classList.add('hide');
@@ -1800,34 +1803,34 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         }, duration);
     };
 
-    // Centraliza o preenchimento e a pesquisa ao escanear um código
+    // Centraliza o preenchimento e a pesquisa ao escanear um cï¿½digo
     const applyScannedBarcode = (code) => {
         if (!code) return;
         playBeep();
-        // Preenche o campo "Pesquisar por código de barras" se existir
+        // Preenche o campo "Pesquisar por cï¿½digo de barras" se existir
         if (barcodeSearchBar) {
             barcodeSearchBar.value = code;
             // Dispara o evento de input para acionar a filtragem e UI relacionadas
             try { barcodeSearchBar.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
-            // Opcional: atualiza a badge de última busca
+            // Opcional: atualiza a badge de ï¿½ltima busca
             try { if (typeof setLastSearched === 'function') setLastSearched(code); } catch (_) {}
-            // Tenta abrir automaticamente a comparação do produto lido
+            // Tenta abrir automaticamente a comparaï¿½ï¿½o do produto lido
             try {
                 const products = getFromLocalStorage('products');
                 const prod = products.find(p => String(p.barcode) === String(code));
                 if (prod && typeof openCompareModal === 'function') {
                     // pequeno atraso para UI respirar e garantir parada do scanner
                     setTimeout(() => openCompareModal(prod.name), 150);
-                    try { showToast(`Código lido: ${code}. Abrindo comparação…`, { type: 'success' }); } catch (_) {}
+                    try { showToast(`Cï¿½digo lido: ${code}. Abrindo comparaï¿½ï¿½oï¿½`, { type: 'success' }); } catch (_) {}
                 } else {
-                    try { showToast(`Código lido: ${String(code)} – produto não encontrado`, { type: 'info' }); } catch (_) {}
+                    try { showToast(`Cï¿½digo lido: ${String(code)} ï¿½ produto nï¿½o encontrado`, { type: 'info' }); } catch (_) {}
                 }
             } catch(_) {}
         } else if (productSearchBar) {
             // Fallback: preenche o campo de nome
             productSearchBar.value = code;
             if (typeof filterProducts === 'function') filterProducts();
-            try { showToast(`Código lido: ${String(code).slice(0, 18)} – resultados filtrados`, { type: 'success' }); } catch (_) {}
+            try { showToast(`Cï¿½digo lido: ${String(code).slice(0, 18)} ï¿½ resultados filtrados`, { type: 'success' }); } catch (_) {}
         }
     };
 
@@ -1837,7 +1840,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         try {
             // Preferir html5-qrcode (robusto em Android/iOS)
             if (window.Html5Qrcode && barcodeScannerEl) {
-                // criar/reciclar instância
+                // criar/reciclar instï¿½ncia
                 if (!html5QrCode) html5QrCode = new Html5Qrcode(barcodeScannerEl.id, { verbose: false });
                 const cameras = await Html5Qrcode.getCameras();
                 let camId = null;
@@ -1847,7 +1850,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
                         cameraSelect.innerHTML = '';
                         cameras.forEach((c, idx) => {
                             const opt = document.createElement('option');
-                            opt.value = c.id; opt.textContent = c.label || `Câmera ${idx + 1}`; cameraSelect.appendChild(opt);
+                            opt.value = c.id; opt.textContent = c.label || `Cï¿½mera ${idx + 1}`; cameraSelect.appendChild(opt);
                         });
                         cameraSelect.style.display = 'inline-block';
                     }
@@ -1872,32 +1875,32 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
                     config,
                     (decodedText) => {
                         if (!decodedText) return;
-                        if (html5QrCodeRunning) { // evitar múltiplos callbacks
+                        if (html5QrCodeRunning) { // evitar mï¿½ltiplos callbacks
                             html5QrCodeRunning = false;
                             applyScannedBarcode(decodedText);
                             stopScanner();
                         }
                     },
                     (errMsg) => {
-                        // erros de leitura são esperados; reduzir ruído
+                        // erros de leitura sï¿½o esperados; reduzir ruï¿½do
                         // console.debug('scan error', errMsg);
                     }
                 );
                 html5QrCodeRunning = true;
-                scannerMessage.textContent = 'Aponte a câmera para o código de barras.';
+                scannerMessage.textContent = 'Aponte a cï¿½mera para o cï¿½digo de barras.';
                 return;
             }
 
-            // Fallback: API nativa ou ZXing se html5-qrcode não estiver disponível
+            // Fallback: API nativa ou ZXing se html5-qrcode nï¿½o estiver disponï¿½vel
             if ('BarcodeDetector' in window) {
                 const formats = await BarcodeDetector.getSupportedFormats();
                 barcodeDetector = new BarcodeDetector({ formats });
-                // iniciar câmera simples
+                // iniciar cï¿½mera simples
                 const constraints = currentDeviceId ? { video: { deviceId: { exact: currentDeviceId } } } : { video: { facingMode: 'environment' } };
                 scannerStream = await navigator.mediaDevices.getUserMedia({ ...constraints, audio: false });
                 const videoEl = document.createElement('video');
                 videoEl.playsInline = true; videoEl.muted = true; videoEl.autoplay = true; videoEl.srcObject = scannerStream; videoEl.play();
-                // loop de detecção
+                // loop de detecï¿½ï¿½o
                 scannerInterval = setInterval(async () => {
                     try {
                         const barcodes = await barcodeDetector.detect(videoEl);
@@ -1924,11 +1927,11 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
                     scannerMessage.textContent = 'Erro ao inicializar leitor fallback.';
                 }
             } else {
-                scannerMessage.textContent = 'Leitor de código não disponível neste navegador. Por favor insira manualmente.';
+                scannerMessage.textContent = 'Leitor de cï¿½digo nï¿½o disponï¿½vel neste navegador. Por favor insira manualmente.';
             }
         } catch (err) {
-            console.error('Erro ao acessar câmera:', err);
-            scannerMessage.textContent = 'Não foi possível acessar a câmera.';
+            console.error('Erro ao acessar cï¿½mera:', err);
+            scannerMessage.textContent = 'Nï¿½o foi possï¿½vel acessar a cï¿½mera.';
         }
     };
 
@@ -1946,7 +1949,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             }
         } catch(_) {}
         if (scannerStream) { scannerStream = null; }
-        // Se estiver usando ZXing, pare o leitor contínuo
+        // Se estiver usando ZXing, pare o leitor contï¿½nuo
         try {
             if (zxingReader) {
                 if (typeof zxingReader.reset === 'function') {
@@ -1957,11 +1960,11 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         } catch (zxStopErr) {
             console.error('Erro ao parar ZXing reader:', zxStopErr);
         }
-        // opcional: restaurar seleção de dispositivos (manter atual)
+        // opcional: restaurar seleï¿½ï¿½o de dispositivos (manter atual)
         if (scannerModal) closeModal(scannerModal);
     };
 
-    // Enumerar câmeras disponíveis e popular o select
+    // Enumerar cï¿½meras disponï¿½veis e popular o select
     const populateCameraList = async () => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
         try {
@@ -1983,7 +1986,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             videoDevices.forEach((dev, idx) => {
                 const opt = document.createElement('option');
                 opt.value = dev.deviceId;
-                opt.textContent = dev.label || `Câmera ${idx + 1}`;
+                opt.textContent = dev.label || `Cï¿½mera ${idx + 1}`;
                 cameraSelect.appendChild(opt);
             });
             cameraSelect.style.display = 'inline-block';
@@ -1992,14 +1995,14 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
             cameraSelect.selectedIndex = defaultIdx;
             currentDeviceId = cameraSelect.value;
         } catch (err) {
-            console.error('Erro ao listar câmeras:', err);
+            console.error('Erro ao listar cï¿½meras:', err);
         }
     };
 
     if (cameraSelect) {
         cameraSelect.addEventListener('change', (e) => {
             currentDeviceId = e.target.value;
-            // Se o scanner estiver aberto, reinicia com a nova câmera
+            // Se o scanner estiver aberto, reinicia com a nova cï¿½mera
             if (scannerModal && scannerModal.classList.contains('show')) {
                 stopScanner();
                 setTimeout(() => startScanner(), 300);
@@ -2019,7 +2022,7 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
     }
 
     if (stopScannerBtn) stopScannerBtn.addEventListener('click', stopScanner);
-    // Popula lista de câmeras ao carregar a página
+    // Popula lista de cï¿½meras ao carregar a pï¿½gina
     populateCameraList();
 
     // Floating barcode button (centralizado aqui)
@@ -2031,14 +2034,14 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         });
     }
 
-    // Event listener global para impedir scroll APENAS quando realmente há um modal visível
+    // Event listener global para impedir scroll APENAS quando realmente hï¿½ um modal visï¿½vel
     const preventScroll = (e) => {
         // Exigir classe e um modal .show presente (safety contra classe presa por engano)
         const hasLockClass = document.body.classList.contains('modal-open');
         const anyModalOpen = !!document.querySelector('.modal.show');
-        if (!(hasLockClass && anyModalOpen)) return; // não bloquear
+        if (!(hasLockClass && anyModalOpen)) return; // nï¿½o bloquear
 
-        // Bloquear scroll da página de fundo; permitir scroll dentro do modal
+        // Bloquear scroll da pï¿½gina de fundo; permitir scroll dentro do modal
         const openModalEl = document.querySelector('.modal.show .modal-content');
         const isInsideModal = openModalEl && openModalEl.contains(e.target);
         if (!isInsideModal) {
@@ -2055,18 +2058,18 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         const hasLockClass = document.body.classList.contains('modal-open');
         const anyModalOpen = !!document.querySelector('.modal.show');
         if (!(hasLockClass && anyModalOpen)) return;
-        // Impedir teclas de navegação (setas, page up/down, home, end)
+        // Impedir teclas de navegaï¿½ï¿½o (setas, page up/down, home, end)
         if ([32, 33, 34, 35, 36, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
             e.preventDefault();
             return false;
         }
     });
 
-    // Tornar as funções disponíveis globalmente
+    // Tornar as funï¿½ï¿½es disponï¿½veis globalmente
     window.filterProducts = filterProducts;
     window.filterProductsByBarcode = filterProductsByBarcode;
 
-    // Chamar initializeAppData após configurar tudo
+    // Chamar initializeAppData apï¿½s configurar tudo
     try {
         initializeAppData();
     } catch (e) {
@@ -2078,17 +2081,17 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         console.log('?? Evento productsLoaded recebido:', event.detail);
         if (typeof window.renderProducts === 'function') {
             window.renderProducts();
-            console.log('? Produtos do Firebase renderizados após evento');
-            // Atualiza filtros após carregamento
+            console.log('? Produtos do Firebase renderizados apï¿½s evento');
+            // Atualiza filtros apï¿½s carregamento
             if (typeof updateFilterOptions === 'function') {
                 updateFilterOptions();
             }
         }
     });
 
-}); // <-- Fecha o primeiro e único listener de DOMContentLoaded corretamente
+}); // <-- Fecha o primeiro e ï¿½nico listener de DOMContentLoaded corretamente
 
-// Função global para abrir detalhes (mantida fora do listener para acesso geral)
+// Funï¿½ï¿½o global para abrir detalhes (mantida fora do listener para acesso geral)
 function showProductDetail(product) {
     window.currentDetailProduct = product;
     const modal = document.getElementById('product-detail-modal');
@@ -2102,7 +2105,7 @@ function showProductDetail(product) {
     if (nameEl) nameEl.textContent = product.name;
 }
 
-// Fallback: após window load, garantir render se produtos já estiverem no localStorage
+// Fallback: apï¿½s window load, garantir render se produtos jï¿½ estiverem no localStorage
 window.addEventListener('load', () => {
     try {
         const stored = JSON.parse(localStorage.getItem('products') || '[]');
@@ -2112,7 +2115,7 @@ window.addEventListener('load', () => {
             if (typeof updateFilterOptions === 'function') updateFilterOptions();
         }
     } catch (e) {
-        console.warn('Falha no fallback de renderização:', e);
+        console.warn('Falha no fallback de renderizaï¿½ï¿½o:', e);
     }
 
     // Registrar Service Worker para PWA
@@ -2123,11 +2126,11 @@ window.addEventListener('load', () => {
                 .catch(err => console.error('Falha ao registrar ServiceWorker:', err));
         }
     } catch (err) {
-        console.warn('ServiceWorker não suportado ou erro:', err);
+        console.warn('ServiceWorker nï¿½o suportado ou erro:', err);
     }
 
 
-// Listener fora do DOMContentLoaded para não perder evento precoce
+// Listener fora do DOMContentLoaded para nï¿½o perder evento precoce
 window.addEventListener('productsLoaded', (event) => {
     try {
         console.log('?? Listener externo productsLoaded:', event.detail);
@@ -2140,7 +2143,7 @@ window.addEventListener('productsLoaded', (event) => {
     }
 });
 
-    // Definir a URL da imagem padrão
+    // Definir a URL da imagem padrï¿½o
     const DEFAULT_IMAGE_URL = "https://png.pngtree.com/png-vector/20241025/ourmid/png-tree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png";
 
     // Elementos do DOM
@@ -2170,7 +2173,7 @@ window.addEventListener('productsLoaded', (event) => {
     const clearHistoryBtn = document.getElementById('clear-history');
     const closeFavoritesBottomBtn = document.getElementById('close-favorites-bottom');
     
-    // Elementos do modal de sugestão
+    // Elementos do modal de sugestï¿½o
     const modalSuggestionForm = document.getElementById('modal-suggestion-form');
     const modalSuggestionProductName = document.getElementById('modal-suggestion-product-name');
     const modalSuggestionMarket = document.getElementById('modal-suggestion-market');
@@ -2183,13 +2186,13 @@ window.addEventListener('productsLoaded', (event) => {
     const prevBtn = productsSection.querySelector('.prev-btn');
     const nextBtn = productsSection.querySelector('.next-btn');
 
-    // Funções de Utilitários
-    // Para dados que devem persistir (produtos, sugestões)
+    // Funï¿½ï¿½es de Utilitï¿½rios
+    // Para dados que devem persistir (produtos, sugestï¿½es)
     const saveToLocalStorage = (key, data) => {
         localStorage.setItem(key, JSON.stringify(data));
     };
 
-    // Limpar campo de pesquisa quando o botão for clicado
+    // Limpar campo de pesquisa quando o botï¿½o for clicado
     if (clearSearchBtn && productSearchBar) {
         clearSearchBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -2200,7 +2203,7 @@ window.addEventListener('productsLoaded', (event) => {
         });
     }
 
-    // CLONE EXATO - Limpar campo de pesquisa por código de barras
+    // CLONE EXATO - Limpar campo de pesquisa por cï¿½digo de barras
     const clearBarcodeSearchBtn = document.getElementById('clear-barcode-search');
     const barcodeSearchBar = document.getElementById('barcode-search-bar');
     
@@ -2214,7 +2217,7 @@ window.addEventListener('productsLoaded', (event) => {
         });
     }
 
-    // Mostrar dropdown de histórico ao digitar (com itens filtrados)
+    // Mostrar dropdown de histï¿½rico ao digitar (com itens filtrados)
     const showHistoryDropdown = (query) => {
         if (!historyDropdown) return;
         const history = getFromSessionStorage('searchHistory');
@@ -2265,10 +2268,10 @@ window.addEventListener('productsLoaded', (event) => {
         return data ? JSON.parse(data) : [];
     };
     
-    // Tornar disponível globalmente
+    // Tornar disponï¿½vel globalmente
     window.getFromLocalStorage = getFromLocalStorage;
     
-    // Para dados da sessão do utilizador (carrinho, favoritos, histórico)
+    // Para dados da sessï¿½o do utilizador (carrinho, favoritos, histï¿½rico)
     const saveToSessionStorage = (key, data) => {
         sessionStorage.setItem(key, JSON.stringify(data));
     };
@@ -2279,15 +2282,15 @@ window.addEventListener('productsLoaded', (event) => {
         return data ? JSON.parse(data) : [];
     };
     
-    // Tornar disponível globalmente
+    // Tornar disponï¿½vel globalmente
     window.getFromSessionStorage = getFromSessionStorage;
 
 
     const formatPrice = (price) => {
-        return `€ ${parseFloat(price).toFixed(2)}`;
+        return `ï¿½ ${parseFloat(price).toFixed(2)}`;
     };
 
-    // Função para gerir a visibilidade dos botões de scroll
+    // Funï¿½ï¿½o para gerir a visibilidade dos botï¿½es de scroll
     const manageScrollButtons = () => {
         if (!scrollContainer || !prevBtn || !nextBtn) return;
 
@@ -2304,7 +2307,7 @@ window.addEventListener('productsLoaded', (event) => {
         nextBtn.style.display = scrollContainer.scrollLeft < maxScrollLeft - 1 ? 'flex' : 'none';
     };
 
-    // Criação do card de produto para a exibição principal
+    // Criaï¿½ï¿½o do card de produto para a exibiï¿½ï¿½o principal
     const createProductCard = (product, isFavorite = false) => {
         const productCard = document.createElement('div');
             productCard.classList.add('product-card', 'new-product-card');
@@ -2330,7 +2333,7 @@ window.addEventListener('productsLoaded', (event) => {
                 <button class="add-to-cart-btn" data-id="${product.id}" title="Adicionar ao Carrinho">
                     <i class="fas fa-shopping-cart"></i>
                 </button>
-                <button class="suggest-price-btn" data-id="${product.id}" title="Sugerir um novo preço">
+                <button class="suggest-price-btn" data-id="${product.id}" title="Sugerir um novo preï¿½o">
                     <i class="fas fa-edit"></i>
                 </button>
             </div>
@@ -2384,18 +2387,18 @@ window.addEventListener('productsLoaded', (event) => {
         detailName.textContent = p.name;
         detailPrice.textContent = formatPrice(p.price);
         detailMeta.innerHTML = `
-            <div><strong>Código de Barras:</strong> <code style="background:#f0f8ff;padding:2px 6px;border-radius:4px;font-family:monospace;">${p.barcode || 'N/A'}</code></div>
-            <div><strong>Mercado:</strong> ${p.market || '—'}</div>
-            <div><strong>Marca:</strong> ${p.brand || '—'}</div>
-            <div><strong>Categoria:</strong> ${p.category || '—'}</div>
+            <div><strong>Cï¿½digo de Barras:</strong> <code style="background:#f0f8ff;padding:2px 6px;border-radius:4px;font-family:monospace;">${p.barcode || 'N/A'}</code></div>
+            <div><strong>Mercado:</strong> ${p.market || 'ï¿½'}</div>
+            <div><strong>Marca:</strong> ${p.brand || 'ï¿½'}</div>
+            <div><strong>Categoria:</strong> ${p.category || 'ï¿½'}</div>
             <div><strong>Unidade:</strong> ${p.unit || 'N/A'}</div>
-            <div><strong>País:</strong> ${p.country || 'N/A'}</div>
+            <div><strong>Paï¿½s:</strong> ${p.country || 'N/A'}</div>
             ${p.zone ? `<div><strong>Zona:</strong> ${p.zone}</div>` : ''}
             ${p.parish ? `<div><strong>Freguesia:</strong> ${p.parish}</div>` : ''}
         `;
         detailDescription.textContent = p.description || '';
         
-        // Mostrar/ocultar seção de descrição
+        // Mostrar/ocultar seï¿½ï¿½o de descriï¿½ï¿½o
         const descriptionContainer = document.getElementById('detail-description-container');
         if (p.description && p.description.trim()) {
             descriptionContainer.style.display = 'block';
@@ -2435,7 +2438,7 @@ window.addEventListener('productsLoaded', (event) => {
 
     if (closeProductDetailBtn) closeProductDetailBtn.addEventListener('click', () => closeModal(productDetailModal));
 
-    // Criação do item de lista para os modais (carrinho e favoritos)
+    // Criaï¿½ï¿½o do item de lista para os modais (carrinho e favoritos)
     const createModalListItem = (product, isCartItem = false) => {
         const listItem = document.createElement('div');
         listItem.classList.add('modal-list-item');
@@ -2466,7 +2469,7 @@ window.addEventListener('productsLoaded', (event) => {
     };
 
 
-    // Renderização dos Produtos na tela principal
+    // Renderizaï¿½ï¿½o dos Produtos na tela principal
     const renderProducts = (productsToRender = getFromLocalStorage('products')) => {
         productsList.innerHTML = '';
         if (productsToRender.length === 0) {
@@ -2483,11 +2486,11 @@ window.addEventListener('productsLoaded', (event) => {
                 productsList.appendChild(productCard);
             });
         }
-        // Garante que o estado dos botões é verificado após a renderização
+        // Garante que o estado dos botï¿½es ï¿½ verificado apï¿½s a renderizaï¿½ï¿½o
         setTimeout(manageScrollButtons, 100);
     };
     
-    // Tornar renderProducts disponível globalmente para firebase-loader.js
+    // Tornar renderProducts disponï¿½vel globalmente para firebase-loader.js
     window.renderProducts = renderProducts;
 
     // Compare modal helpers
@@ -2515,7 +2518,7 @@ window.addEventListener('productsLoaded', (event) => {
             } catch (err) { /* ignore regex errors */ }
         }
         // remove common separators and extra qualifiers like 'marca', 'pack', weight units etc.
-        n = n.replace(/[-–—_|\/]/g, ' ');
+        n = n.replace(/[-ï¿½ï¿½_|\/]/g, ' ');
         n = n.replace(/marca\s+\w+/ig, '');
         n = n.replace(/\b(kg|g|ml|l|un|unidade|pacote|pack|saco|frasco)\b/ig, '');
         // remove extra punctuation and numbers that typically denote SKU or pack-size
@@ -2597,7 +2600,7 @@ window.addEventListener('productsLoaded', (event) => {
             if (!brand) return true;
             const b = brand.toString().toLowerCase();
             // common indicators of store brands / private labels
-            const indicators = ['marca branca', 'marca própria', 'propria', 'marca do mercado', 'marca própria', 'marca própria', 'marca de distribuidor'];
+            const indicators = ['marca branca', 'marca prï¿½pria', 'propria', 'marca do mercado', 'marca prï¿½pria', 'marca prï¿½pria', 'marca de distribuidor'];
             if (indicators.some(ind => b.includes(ind))) return true;
             // if brand is very short (like 1-2 letters) or generic, treat as private label
             if (b.length <= 2) return true;
@@ -2620,7 +2623,7 @@ window.addEventListener('productsLoaded', (event) => {
         compareTitle.textContent = `Comparar: ${productName}`;
         if (compareModal) compareModal.dataset.compareProduct = productName;
 
-    // Ordena por preço ascendente (mantém referência do mais barato já calculado)
+    // Ordena por preï¿½o ascendente (mantï¿½m referï¿½ncia do mais barato jï¿½ calculado)
     matches.sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
     const others = matches.filter(p => p !== cheapestGlobal);
 
@@ -2660,11 +2663,11 @@ window.addEventListener('productsLoaded', (event) => {
         const ul = document.createElement('div');
         ul.className = 'compare-linear-list';
 
-        // Função para calcular diferença percentual em relação ao mais barato
+        // Funï¿½ï¿½o para calcular diferenï¿½a percentual em relaï¿½ï¿½o ao mais barato
         const diffPercent = (price) => {
             const base = parseFloat(cheapestGlobal.price);
             const current = parseFloat(price);
-            if (!isFinite(base) || base <= 0) return '—';
+            if (!isFinite(base) || base <= 0) return 'ï¿½';
             const pct = ((current - base) / base) * 100;
             return pct === 0 ? 'Igual' : `+${pct.toFixed(1)}%`;
         };
@@ -2691,7 +2694,7 @@ window.addEventListener('productsLoaded', (event) => {
         listWrapper.appendChild(ul);
         desktopLayout.appendChild(listWrapper);
 
-        // Se viewport > 720, usa layout desktop. Para mobile, usaremos uma versão linear simplificada.
+        // Se viewport > 720, usa layout desktop. Para mobile, usaremos uma versï¿½o linear simplificada.
         if (typeof window !== 'undefined' && window.innerWidth > 720) {
             compareList.appendChild(desktopLayout);
             openModal(compareModal);
@@ -2735,7 +2738,7 @@ window.addEventListener('productsLoaded', (event) => {
             const base = parseFloat(cheapestGlobal.price);
             const diffPct = (price) => {
                 const current = parseFloat(price);
-                if (!isFinite(base) || base <= 0) return '—';
+                if (!isFinite(base) || base <= 0) return 'ï¿½';
                 const pct = ((current - base) / base) * 100;
                 if (pct === 0) return 'Igual';
                 const str = `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
@@ -2766,7 +2769,7 @@ window.addEventListener('productsLoaded', (event) => {
             return;
         }
 
-        // ===== Mantém fluxo ANTIGO para mobile abaixo =====
+        // ===== Mantï¿½m fluxo ANTIGO para mobile abaixo =====
         privateLabel.sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
         branded.sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
         const limitedPrivateLabel = privateLabel.slice(0, 3);
@@ -2834,11 +2837,11 @@ window.addEventListener('productsLoaded', (event) => {
         
         // Adicionar produtos de marca com separador
         limitedBranded.forEach((it, index) => {
-            // Adicionar separador após os primeiros 3 produtos de marca
+            // Adicionar separador apï¿½s os primeiros 3 produtos de marca
             if (index === 3 && limitedBranded.length > 3) {
                 const separator = document.createElement('div');
                 separator.className = 'compare-separator';
-                separator.innerHTML = '<hr><span>Mais opções de marca</span><hr>';
+                separator.innerHTML = '<hr><span>Mais opï¿½ï¿½es de marca</span><hr>';
                 rightGrid.appendChild(separator);
             }
             rightGrid.appendChild(makeCard(it, highestBranded2, cheapestBranded));
@@ -2999,7 +3002,7 @@ window.addEventListener('productsLoaded', (event) => {
                     columnsWrap.appendChild(mobileList);
                 }
             } catch (err) {
-                // if anything fails, silently continue — we still have the original columnsWrap
+                // if anything fails, silently continue ï¿½ we still have the original columnsWrap
                 console.error('Fallback to mobile list failed:', err);
             }
         }
@@ -3086,9 +3089,9 @@ window.addEventListener('productsLoaded', (event) => {
                         <h3 class="detail-name">${esc(p.name)}</h3>
                         <div class="detail-price">${formatPrice(p.price)}</div>
                         <div class="detail-meta">
-                            <div><strong>Mercado:</strong> ${esc(p.market || '—')}</div>
-                            <div><strong>Marca:</strong> ${esc(p.brand || '—')}</div>
-                            <div><strong>Categoria:</strong> ${esc(p.category || '—')}</div>
+                            <div><strong>Mercado:</strong> ${esc(p.market || 'ï¿½')}</div>
+                            <div><strong>Marca:</strong> ${esc(p.brand || 'ï¿½')}</div>
+                            <div><strong>Categoria:</strong> ${esc(p.category || 'ï¿½')}</div>
                             <div><strong>Unidade:</strong> ${esc(p.quantity||'')} ${esc(p.unit||'')}</div>
                         </div>
                         <p class="detail-description">${esc(p.description || '')}</p>
@@ -3163,7 +3166,7 @@ window.addEventListener('productsLoaded', (event) => {
         const products = getFromLocalStorage('products');
         const recentProducts = products.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded)).slice(0, 5);
 
-        if (!recentProductsList) return; // Proteção caso o elemento não exista
+        if (!recentProductsList) return; // Proteï¿½ï¿½o caso o elemento nï¿½o exista
         
         recentProductsList.innerHTML = '';
         if (recentProducts.length === 0) {
@@ -3177,7 +3180,7 @@ window.addEventListener('productsLoaded', (event) => {
         }
     };
 
-    // Lógica para Favoritos
+    // Lï¿½gica para Favoritos
     const renderFavorites = () => {
         const favorites = getFromSessionStorage('favorites');
         favoritesList.innerHTML = '';
@@ -3192,7 +3195,7 @@ window.addEventListener('productsLoaded', (event) => {
         }
     };
 
-    // Lógica para o Histórico de Pesquisa
+    // Lï¿½gica para o Histï¿½rico de Pesquisa
     const renderSearchHistory = () => {
         const history = getFromSessionStorage('searchHistory');
         searchHistoryList.innerHTML = '';
@@ -3228,7 +3231,7 @@ window.addEventListener('productsLoaded', (event) => {
         });
     };
 
-    // Lógica para o Carrinho de Compras
+    // Lï¿½gica para o Carrinho de Compras
     const updateCartTotal = () => {
         const cart = getFromSessionStorage('cart');
         const total = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
@@ -3259,7 +3262,7 @@ window.addEventListener('productsLoaded', (event) => {
 
         Object.keys(groups).forEach(market => {
             const items = groups[market];
-            // Cabeçalho do mercado
+            // Cabeï¿½alho do mercado
             const marketHeader = document.createElement('div');
             marketHeader.className = 'cart-market-header';
             marketHeader.innerHTML = `<h4 class="market-name">${market}</h4>`;
@@ -3291,9 +3294,9 @@ window.addEventListener('productsLoaded', (event) => {
         cartTotalElement.textContent = formatPrice(grandTotal);
     };
 
-    // Lógica de Filtros e Busca
+    // Lï¿½gica de Filtros e Busca
     const filterProducts = () => {
-        const products = getFromLocalStorage('products'); // Os produtos base vêm do localStorage
+        const products = getFromLocalStorage('products'); // Os produtos base vï¿½m do localStorage
         
         // Pegar o termo de pesquisa de ambos os campos
         const nameSearchTerm = productSearchBar.value.toLowerCase();
@@ -3331,7 +3334,7 @@ window.addEventListener('productsLoaded', (event) => {
         }
     };
 
-    // Função específica para pesquisa por código de barras
+    // Funï¿½ï¿½o especï¿½fica para pesquisa por cï¿½digo de barras
     const filterProductsByBarcode = (barcodeQuery) => {
         const products = getFromLocalStorage('products');
         const marketValue = marketFilter.value;
@@ -3372,7 +3375,7 @@ window.addEventListener('productsLoaded', (event) => {
         categoryFilter.innerHTML = `<option value="">Todas as Categorias</option>${categories.map(c => `<option value="${c}">${c}</option>`).join('')}`;
     };
     
-    // Tornar disponível globalmente
+    // Tornar disponï¿½vel globalmente
     window.updateFilterOptions = updateFilterOptions;
 
     // Helper to display last searched term
@@ -3384,7 +3387,7 @@ window.addEventListener('productsLoaded', (event) => {
             sessionStorage.removeItem('lastSearched');
             return;
         }
-        lastSearchedEl.textContent = `Última: ${term}`;
+        lastSearchedEl.textContent = `ï¿½ltima: ${term}`;
         saveToSessionStorage('lastSearched', term);
     };
 
@@ -3401,7 +3404,7 @@ window.addEventListener('productsLoaded', (event) => {
             showHistoryDropdown(q);
         }
     });
-    // Ao pressionar Enter no campo de pesquisa, salvar no histórico e mostrar seção
+    // Ao pressionar Enter no campo de pesquisa, salvar no histï¿½rico e mostrar seï¿½ï¿½o
     productSearchBar.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -3411,7 +3414,7 @@ window.addEventListener('productsLoaded', (event) => {
                 // evita duplicados recentes
                 history = history.filter(h => h.toLowerCase() !== term.toLowerCase());
                 history.unshift(term);
-                // mantém apenas últimos 10
+                // mantï¿½m apenas ï¿½ltimos 10
                 history = history.slice(0, 10);
                 saveToSessionStorage('searchHistory', history);
                 renderSearchHistory();
@@ -3426,7 +3429,7 @@ window.addEventListener('productsLoaded', (event) => {
         }
     });
 
-    // CLONE EXATO - Eventos para campo de código de barras
+    // CLONE EXATO - Eventos para campo de cï¿½digo de barras
     barcodeSearchBar.addEventListener('input', (e) => {
         const q = e.target.value || '';
         if (!q.trim()) {
@@ -3441,7 +3444,7 @@ window.addEventListener('productsLoaded', (event) => {
         }
     });
     
-    // CLONE EXATO - Ao pressionar Enter no campo de código de barras
+    // CLONE EXATO - Ao pressionar Enter no campo de cï¿½digo de barras
     barcodeSearchBar.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -3451,7 +3454,7 @@ window.addEventListener('productsLoaded', (event) => {
                 // evita duplicados recentes
                 history = history.filter(h => h.toLowerCase() !== term.toLowerCase());
                 history.unshift(term);
-                // mantém apenas últimos 10
+                // mantï¿½m apenas ï¿½ltimos 10
                 history = history.slice(0, 10);
                 saveToSessionStorage('searchHistory', history);
                 renderSearchHistory();
@@ -3470,7 +3473,7 @@ window.addEventListener('productsLoaded', (event) => {
     brandFilter.addEventListener('change', filterProducts);
     categoryFilter.addEventListener('change', filterProducts);
 
-    // Ao clicar em um card de produto (fora dos botões), abrir modal de detalhe
+    // Ao clicar em um card de produto (fora dos botï¿½es), abrir modal de detalhe
     productsList.addEventListener('click', (e) => {
         const card = e.target.closest('.product-card');
         if (!card) return;
@@ -3479,7 +3482,7 @@ window.addEventListener('productsLoaded', (event) => {
         if (id) openProductDetail(id);
     });
 
-    // Botão de pesquisar (se for adicionado futuramente): caso exista, faz mesma ação do Enter
+    // Botï¿½o de pesquisar (se for adicionado futuramente): caso exista, faz mesma aï¿½ï¿½o do Enter
     const searchButton = document.getElementById('search-button');
     if (searchButton) {
         searchButton.addEventListener('click', (e) => {
@@ -3501,7 +3504,7 @@ window.addEventListener('productsLoaded', (event) => {
         });
     }
 
-    // CLONE EXATO - Botão de pesquisar por código de barras
+    // CLONE EXATO - Botï¿½o de pesquisar por cï¿½digo de barras
     const barcodeSearchButton = document.getElementById('barcode-search-button');
     if (barcodeSearchButton) {
         barcodeSearchButton.addEventListener('click', (e) => {
@@ -3523,7 +3526,7 @@ window.addEventListener('productsLoaded', (event) => {
         });
     }
 
-    // Limpar histórico de pesquisa
+    // Limpar histï¿½rico de pesquisa
     if (clearHistoryBtn) {
         clearHistoryBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -3585,14 +3588,14 @@ window.addEventListener('productsLoaded', (event) => {
             modalSuggestionProductId.value = product.id;
             modalSuggestionProductName.value = product.name || '';
             modalSuggestionMarket.value = product.market || '';
-                // zona removida: apenas preço editável conforme solicitado
-            // Apenas o campo de preço fica editável - os demais permanecem disabled no HTML
+                // zona removida: apenas preï¿½o editï¿½vel conforme solicitado
+            // Apenas o campo de preï¿½o fica editï¿½vel - os demais permanecem disabled no HTML
             modalSuggestionNewPrice.value = product.price ? parseFloat(product.price).toFixed(2) : '';
             openModal(suggestionModal);
         }
     });
 
-    // Eventos específicos dos modais
+    // Eventos especï¿½ficos dos modais
     cartItemsList.addEventListener('click', (e) => {
         const targetBtn = e.target.closest('button');
         if (!targetBtn) return;
@@ -3632,10 +3635,10 @@ window.addEventListener('productsLoaded', (event) => {
         favorites = favorites.filter(fav => fav.id != productId);
         saveToSessionStorage('favorites', favorites);
         renderFavorites();
-        renderProducts(); // Atualiza a tela principal para desmarcar o coração
+        renderProducts(); // Atualiza a tela principal para desmarcar o coraï¿½ï¿½o
     });
 
-    // Evento de submissão do formulário de sugestão
+    // Evento de submissï¿½o do formulï¿½rio de sugestï¿½o
     modalSuggestionForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
@@ -3645,7 +3648,7 @@ window.addEventListener('productsLoaded', (event) => {
     const suggestedPrice = modalSuggestionNewPrice.value;
         
         if (!suggestedPrice) {
-            alert('Por favor, insira um preço válido.');
+            alert('Por favor, insira um preï¿½o vï¿½lido.');
             return;
         }
 
@@ -3658,16 +3661,16 @@ window.addEventListener('productsLoaded', (event) => {
             date: new Date().toISOString()
         };
 
-        const suggestions = getFromLocalStorage('suggestions'); // Sugestões persistem
+        const suggestions = getFromLocalStorage('suggestions'); // Sugestï¿½es persistem
         suggestions.push(newSuggestion);
         saveToLocalStorage('suggestions', suggestions); // Salva no localStorage
 
-    alert('Sua sugestão foi enviada com sucesso e será analisada pela administração!');
+    alert('Sua sugestï¿½o foi enviada com sucesso e serï¿½ analisada pela administraï¿½ï¿½o!');
     closeModal(suggestionModal);
         modalSuggestionForm.reset();
     });
 
-    // Funções para bloquear/desbloquear scroll da página
+    // Funï¿½ï¿½es para bloquear/desbloquear scroll da pï¿½gina
     const lockBodyScroll = () => {
         const scrollY = window.scrollY;
         document.body.style.position = 'fixed';
@@ -3686,11 +3689,11 @@ window.addEventListener('productsLoaded', (event) => {
     };
 
     // Abrir modais
-    // Helpers para abrir/fechar com animação
+    // Helpers para abrir/fechar com animaï¿½ï¿½o
     const openModal = (modal) => {
         if (!modal) return;
         
-        // Bloquear scroll da página
+        // Bloquear scroll da pï¿½gina
         lockBodyScroll();
         
         modal.classList.remove('closing');
@@ -3707,12 +3710,12 @@ window.addEventListener('productsLoaded', (event) => {
         modal.classList.remove('visible');
         modal.classList.add('closing');
         
-        // aguarda animação antes de esconder e desbloquear scroll
+        // aguarda animaï¿½ï¿½o antes de esconder e desbloquear scroll
         setTimeout(() => {
             modal.classList.remove('show', 'closing');
             modal.style.display = 'none';
             
-            // Desbloquear scroll da página
+            // Desbloquear scroll da pï¿½gina
             unlockBodyScroll();
         }, 240);
     };
@@ -3729,7 +3732,7 @@ window.addEventListener('productsLoaded', (event) => {
         renderFavorites();
     });
 
-    // COMENTADO: // Fechar modais com animação
+    // COMENTADO: // Fechar modais com animaï¿½ï¿½o
     // COMENTADO: closeModalBtns.forEach(btn => {
     // COMENTADO: btn.addEventListener('click', () => {
     // COMENTADO: const modal = btn.closest('.modal');
@@ -3741,19 +3744,19 @@ window.addEventListener('productsLoaded', (event) => {
     // COMENTADO: closeModal(cartModal);
     // COMENTADO: });
     // COMENTADO: 
-    // COMENTADO: // Fechar modais clicando fora (backdrop) - genérico para qualquer modal
+    // COMENTADO: // Fechar modais clicando fora (backdrop) - genï¿½rico para qualquer modal
     // COMENTADO: window.addEventListener('click', (e) => {
     // COMENTADO: try {
     // COMENTADO: if (e.target && e.target.classList && e.target.classList.contains('modal')) {
     // COMENTADO: closeModal(e.target);
     // COMENTADO: }
     // COMENTADO: } catch (err) {
-    // COMENTADO: // segurança contra ambientes inesperados
+    // COMENTADO: // seguranï¿½a contra ambientes inesperados
     // COMENTADO: console.error('Erro ao avaliar clique no backdrop do modal:', err);
     // COMENTADO: }
     // COMENTADO: });
 
-    // Lógica para os botões de scroll da lista de produtos
+    // Lï¿½gica para os botï¿½es de scroll da lista de produtos
     if (scrollContainer && prevBtn && nextBtn) {
         const scrollAmount = 300; 
 
@@ -3781,7 +3784,7 @@ window.addEventListener('productsLoaded', (event) => {
         renderRecentProducts();
     });
 
-    // Inicialização
+    // Inicializaï¿½ï¿½o
     updateFilterOptions();
     renderProducts();
     renderFavorites();
@@ -3793,7 +3796,7 @@ window.addEventListener('productsLoaded', (event) => {
         if (saved && typeof setLastSearched === 'function') setLastSearched(saved);
     } catch (initErr) { /* ignore */ }
 
-    // Handler duplicado (segunda seção) substituído: abrir scanner sem focar input
+    // Handler duplicado (segunda seï¿½ï¿½o) substituï¿½do: abrir scanner sem focar input
     const barcodeBtn = document.getElementById('barcode-search-btn');
     if (barcodeBtn) {
         barcodeBtn.addEventListener('click', (e) => {
@@ -3809,7 +3812,7 @@ window.addEventListener('productsLoaded', (event) => {
         });
     }
 
-    // Scanner de código de barras (usa BarcodeDetector quando disponível)
+    // Scanner de cï¿½digo de barras (usa BarcodeDetector quando disponï¿½vel)
     const scannerModal = document.getElementById('scanner-modal');
     const barcodeScannerEl = document.getElementById('barcode-scanner');
     const scannerMessage = document.getElementById('scanner-message');
@@ -3824,7 +3827,7 @@ window.addEventListener('productsLoaded', (event) => {
     let html5QrCode = null;
     let html5QrCodeRunning = false;
 
-    // Beep curto ao ler um código
+    // Beep curto ao ler um cï¿½digo
     const playBeep = () => {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3841,7 +3844,7 @@ window.addEventListener('productsLoaded', (event) => {
         } catch(_) {}
     };
 
-    // Toast helper para feedback rápido
+    // Toast helper para feedback rï¿½pido
     const getToastContainer = () => {
         let c = document.getElementById('toast-container');
         if (!c) {
@@ -3862,9 +3865,9 @@ window.addEventListener('productsLoaded', (event) => {
         toast.className = `toast toast-${type}`;
         toast.textContent = message;
         container.appendChild(toast);
-        // animação de entrada
+        // animaï¿½ï¿½o de entrada
         requestAnimationFrame(() => toast.classList.add('show'));
-        // saída e remoção
+        // saï¿½da e remoï¿½ï¿½o
         setTimeout(() => {
             toast.classList.remove('show');
             toast.classList.add('hide');
@@ -3872,34 +3875,34 @@ window.addEventListener('productsLoaded', (event) => {
         }, duration);
     };
 
-    // Centraliza o preenchimento e a pesquisa ao escanear um código
+    // Centraliza o preenchimento e a pesquisa ao escanear um cï¿½digo
     const applyScannedBarcode = (code) => {
         if (!code) return;
         playBeep();
-        // Preenche o campo "Pesquisar por código de barras" se existir
+        // Preenche o campo "Pesquisar por cï¿½digo de barras" se existir
         if (barcodeSearchBar) {
             barcodeSearchBar.value = code;
             // Dispara o evento de input para acionar a filtragem e UI relacionadas
             try { barcodeSearchBar.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
-            // Opcional: atualiza a badge de última busca
+            // Opcional: atualiza a badge de ï¿½ltima busca
             try { if (typeof setLastSearched === 'function') setLastSearched(code); } catch (_) {}
-            // Tenta abrir automaticamente a comparação do produto lido
+            // Tenta abrir automaticamente a comparaï¿½ï¿½o do produto lido
             try {
                 const products = getFromLocalStorage('products');
                 const prod = products.find(p => String(p.barcode) === String(code));
                 if (prod && typeof openCompareModal === 'function') {
                     // pequeno atraso para UI respirar e garantir parada do scanner
                     setTimeout(() => openCompareModal(prod.name), 150);
-                    try { showToast(`Código lido: ${code}. Abrindo comparação…`, { type: 'success' }); } catch (_) {}
+                    try { showToast(`Cï¿½digo lido: ${code}. Abrindo comparaï¿½ï¿½oï¿½`, { type: 'success' }); } catch (_) {}
                 } else {
-                    try { showToast(`Código lido: ${String(code)} – produto não encontrado`, { type: 'info' }); } catch (_) {}
+                    try { showToast(`Cï¿½digo lido: ${String(code)} ï¿½ produto nï¿½o encontrado`, { type: 'info' }); } catch (_) {}
                 }
             } catch(_) {}
         } else if (productSearchBar) {
             // Fallback: preenche o campo de nome
             productSearchBar.value = code;
             if (typeof filterProducts === 'function') filterProducts();
-            try { showToast(`Código lido: ${String(code).slice(0, 18)} – resultados filtrados`, { type: 'success' }); } catch (_) {}
+            try { showToast(`Cï¿½digo lido: ${String(code).slice(0, 18)} ï¿½ resultados filtrados`, { type: 'success' }); } catch (_) {}
         }
     };
 
@@ -3909,7 +3912,7 @@ window.addEventListener('productsLoaded', (event) => {
         try {
             // Preferir html5-qrcode (robusto em Android/iOS)
             if (window.Html5Qrcode && barcodeScannerEl) {
-                // criar/reciclar instância
+                // criar/reciclar instï¿½ncia
                 if (!html5QrCode) html5QrCode = new Html5Qrcode(barcodeScannerEl.id, { verbose: false });
                 const cameras = await Html5Qrcode.getCameras();
                 let camId = null;
@@ -3919,7 +3922,7 @@ window.addEventListener('productsLoaded', (event) => {
                         cameraSelect.innerHTML = '';
                         cameras.forEach((c, idx) => {
                             const opt = document.createElement('option');
-                            opt.value = c.id; opt.textContent = c.label || `Câmera ${idx + 1}`; cameraSelect.appendChild(opt);
+                            opt.value = c.id; opt.textContent = c.label || `Cï¿½mera ${idx + 1}`; cameraSelect.appendChild(opt);
                         });
                         cameraSelect.style.display = 'inline-block';
                     }
@@ -3944,32 +3947,32 @@ window.addEventListener('productsLoaded', (event) => {
                     config,
                     (decodedText) => {
                         if (!decodedText) return;
-                        if (html5QrCodeRunning) { // evitar múltiplos callbacks
+                        if (html5QrCodeRunning) { // evitar mï¿½ltiplos callbacks
                             html5QrCodeRunning = false;
                             applyScannedBarcode(decodedText);
                             stopScanner();
                         }
                     },
                     (errMsg) => {
-                        // erros de leitura são esperados; reduzir ruído
+                        // erros de leitura sï¿½o esperados; reduzir ruï¿½do
                         // console.debug('scan error', errMsg);
                     }
                 );
                 html5QrCodeRunning = true;
-                scannerMessage.textContent = 'Aponte a câmera para o código de barras.';
+                scannerMessage.textContent = 'Aponte a cï¿½mera para o cï¿½digo de barras.';
                 return;
             }
 
-            // Fallback: API nativa ou ZXing se html5-qrcode não estiver disponível
+            // Fallback: API nativa ou ZXing se html5-qrcode nï¿½o estiver disponï¿½vel
             if ('BarcodeDetector' in window) {
                 const formats = await BarcodeDetector.getSupportedFormats();
                 barcodeDetector = new BarcodeDetector({ formats });
-                // iniciar câmera simples
+                // iniciar cï¿½mera simples
                 const constraints = currentDeviceId ? { video: { deviceId: { exact: currentDeviceId } } } : { video: { facingMode: 'environment' } };
                 scannerStream = await navigator.mediaDevices.getUserMedia({ ...constraints, audio: false });
                 const videoEl = document.createElement('video');
                 videoEl.playsInline = true; videoEl.muted = true; videoEl.autoplay = true; videoEl.srcObject = scannerStream; videoEl.play();
-                // loop de detecção
+                // loop de detecï¿½ï¿½o
                 scannerInterval = setInterval(async () => {
                     try {
                         const barcodes = await barcodeDetector.detect(videoEl);
@@ -3996,11 +3999,11 @@ window.addEventListener('productsLoaded', (event) => {
                     scannerMessage.textContent = 'Erro ao inicializar leitor fallback.';
                 }
             } else {
-                scannerMessage.textContent = 'Leitor de código não disponível neste navegador. Por favor insira manualmente.';
+                scannerMessage.textContent = 'Leitor de cï¿½digo nï¿½o disponï¿½vel neste navegador. Por favor insira manualmente.';
             }
         } catch (err) {
-            console.error('Erro ao acessar câmera:', err);
-            scannerMessage.textContent = 'Não foi possível acessar a câmera.';
+            console.error('Erro ao acessar cï¿½mera:', err);
+            scannerMessage.textContent = 'Nï¿½o foi possï¿½vel acessar a cï¿½mera.';
         }
     };
 
@@ -4018,7 +4021,7 @@ window.addEventListener('productsLoaded', (event) => {
             }
         } catch(_) {}
         if (scannerStream) { scannerStream = null; }
-        // Se estiver usando ZXing, pare o leitor contínuo
+        // Se estiver usando ZXing, pare o leitor contï¿½nuo
         try {
             if (zxingReader) {
                 if (typeof zxingReader.reset === 'function') {
@@ -4029,11 +4032,11 @@ window.addEventListener('productsLoaded', (event) => {
         } catch (zxStopErr) {
             console.error('Erro ao parar ZXing reader:', zxStopErr);
         }
-        // opcional: restaurar seleção de dispositivos (manter atual)
+        // opcional: restaurar seleï¿½ï¿½o de dispositivos (manter atual)
         if (scannerModal) closeModal(scannerModal);
     };
 
-    // Enumerar câmeras disponíveis e popular o select
+    // Enumerar cï¿½meras disponï¿½veis e popular o select
     const populateCameraList = async () => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
         try {
@@ -4055,7 +4058,7 @@ window.addEventListener('productsLoaded', (event) => {
             videoDevices.forEach((dev, idx) => {
                 const opt = document.createElement('option');
                 opt.value = dev.deviceId;
-                opt.textContent = dev.label || `Câmera ${idx + 1}`;
+                opt.textContent = dev.label || `Cï¿½mera ${idx + 1}`;
                 cameraSelect.appendChild(opt);
             });
             cameraSelect.style.display = 'inline-block';
@@ -4064,14 +4067,14 @@ window.addEventListener('productsLoaded', (event) => {
             cameraSelect.selectedIndex = defaultIdx;
             currentDeviceId = cameraSelect.value;
         } catch (err) {
-            console.error('Erro ao listar câmeras:', err);
+            console.error('Erro ao listar cï¿½meras:', err);
         }
     };
 
     if (cameraSelect) {
         cameraSelect.addEventListener('change', (e) => {
             currentDeviceId = e.target.value;
-            // Se o scanner estiver aberto, reinicia com a nova câmera
+            // Se o scanner estiver aberto, reinicia com a nova cï¿½mera
             if (scannerModal && scannerModal.classList.contains('show')) {
                 stopScanner();
                 setTimeout(() => startScanner(), 300);
@@ -4091,7 +4094,7 @@ window.addEventListener('productsLoaded', (event) => {
     }
 
     if (stopScannerBtn) stopScannerBtn.addEventListener('click', stopScanner);
-    // Popula lista de câmeras ao carregar a página
+    // Popula lista de cï¿½meras ao carregar a pï¿½gina
     populateCameraList();
 
     // Floating barcode button (centralizado aqui)
@@ -4103,7 +4106,7 @@ window.addEventListener('productsLoaded', (event) => {
         });
     }
 
-    // Event listener global para impedir scroll APENAS quando realmente há um modal visível
+    // Event listener global para impedir scroll APENAS quando realmente hï¿½ um modal visï¿½vel
     const preventScroll = (e) => {
         const hasLockClass = document.body.classList.contains('modal-open');
         const anyModalOpen = !!document.querySelector('.modal.show');
@@ -4130,11 +4133,11 @@ window.addEventListener('productsLoaded', (event) => {
         }
     });
 
-    // Tornar as funções disponíveis globalmente
+    // Tornar as funï¿½ï¿½es disponï¿½veis globalmente
     window.filterProducts = filterProducts;
     window.filterProductsByBarcode = filterProductsByBarcode;
 
-    // Chamar initializeAppData após configurar tudo
+    // Chamar initializeAppData apï¿½s configurar tudo
     try {
         initializeAppData();
     } catch (e) {
@@ -4146,17 +4149,17 @@ window.addEventListener('productsLoaded', (event) => {
         console.log('?? Evento productsLoaded recebido:', event.detail);
         if (typeof window.renderProducts === 'function') {
             window.renderProducts();
-            console.log('? Produtos do Firebase renderizados após evento');
-            // Atualiza filtros após carregamento
+            console.log('? Produtos do Firebase renderizados apï¿½s evento');
+            // Atualiza filtros apï¿½s carregamento
             if (typeof updateFilterOptions === 'function') {
                 updateFilterOptions();
             }
         }
     });
 
-}); // <-- Fecha o primeiro e único listener de DOMContentLoaded corretamente
+}); // <-- Fecha o primeiro e ï¿½nico listener de DOMContentLoaded corretamente
 
-// Função global para abrir detalhes (mantida fora do listener para acesso geral)
+// Funï¿½ï¿½o global para abrir detalhes (mantida fora do listener para acesso geral)
 function showProductDetail(product) {
     window.currentDetailProduct = product;
     const modal = document.getElementById('product-detail-modal');
@@ -4170,7 +4173,7 @@ function showProductDetail(product) {
     if (nameEl) nameEl.textContent = product.name;
 }
 
-// Fallback: após window load, garantir render se produtos já estiverem no localStorage
+// Fallback: apï¿½s window load, garantir render se produtos jï¿½ estiverem no localStorage
 window.addEventListener('load', () => {
     try {
         const stored = JSON.parse(localStorage.getItem('products') || '[]');
@@ -4180,7 +4183,7 @@ window.addEventListener('load', () => {
             if (typeof updateFilterOptions === 'function') updateFilterOptions();
         }
     } catch (e) {
-        console.warn('Falha no fallback de renderização:', e);
+        console.warn('Falha no fallback de renderizaï¿½ï¿½o:', e);
     }
 
     // Registrar Service Worker para PWA
@@ -4191,11 +4194,11 @@ window.addEventListener('load', () => {
                 .catch(err => console.error('Falha ao registrar ServiceWorker:', err));
         }
     } catch (err) {
-        console.warn('ServiceWorker não suportado ou erro:', err);
+        console.warn('ServiceWorker nï¿½o suportado ou erro:', err);
     }
 });
 
-// Listener fora do DOMContentLoaded para não perder evento precoce
+// Listener fora do DOMContentLoaded para nï¿½o perder evento precoce
 window.addEventListener('productsLoaded', (event) => {
     try {
         console.log('?? Listener externo productsLoaded:', event.detail);

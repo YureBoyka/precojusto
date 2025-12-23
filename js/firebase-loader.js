@@ -24,6 +24,14 @@ async function loadProductsFromFirebase() {
                     
                     const products = snapshot.docs.map(doc => {
                         const data = doc.data();
+                        const rawQuantity = data.quantity ?? data.qty ?? data.amount ?? data.size ?? '';
+                        const quantity = rawQuantity !== undefined && rawQuantity !== null ? String(rawQuantity).trim() : '';
+                        const rawUnit = data.unit ?? data.measure ?? data.unitOfMeasure ?? '';
+                        const unit = rawUnit ? String(rawUnit).trim() : '';
+                        const zone = (data.zone || data.country || data.countryOfOrigin || data.origin || '').toString().trim();
+                        const barcode = (data.barcode || data.ean || data.gtin || '').toString().trim();
+                        const unitDisplay = quantity && unit ? `${quantity} ${unit}`.trim() : (unit || quantity);
+                        
                         return {
                             id: doc.id,
                             name: data.name || 'Produto sem nome',
@@ -32,7 +40,12 @@ async function loadProductsFromFirebase() {
                             market: data.market || data.supermarket || 'Desconhecido',
                             category: data.category || 'Geral',
                             imageUrl: data.imageUrl || data.image || "https://png.pngtree.com/png-vector/20241025/ourmid/png-tree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png",
-                            barcode: data.barcode || ''
+                            barcode: barcode,
+                            unit: unit,
+                            quantity: quantity,
+                            unitDisplay: unitDisplay || '',
+                            country: zone,
+                            zone: zone
                         };
                     });
                     
@@ -93,7 +106,12 @@ function createFallbackProducts() {
             market: 'Pingo Doce',
             category: 'Cereais',
             imageUrl: 'https://png.pngtree.com/png-vector/20241025/ourmid/png-tree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png',
-            barcode: '1234567890123'
+            barcode: '1234567890123',
+            quantity: '1',
+            unit: 'kg',
+            unitDisplay: '1 kg',
+            country: 'Portugal',
+            zone: 'Portugal'
         },
         {
             id: 'sample_2',
@@ -103,7 +121,12 @@ function createFallbackProducts() {
             market: 'Continente',
             category: 'Laticínios',
             imageUrl: 'https://png.pngtree.com/png-vector/20241025/ourmid/png-tree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png',
-            barcode: '1234567890124'
+            barcode: '1234567890124',
+            quantity: '1',
+            unit: 'L',
+            unitDisplay: '1 L',
+            country: 'Portugal',
+            zone: 'Portugal'
         },
         {
             id: 'sample_3',
@@ -113,7 +136,12 @@ function createFallbackProducts() {
             market: 'Pingo Doce',
             category: 'Padaria',
             imageUrl: 'https://png.pngtree.com/png-vector/20241025/ourmid/png-tree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png',
-            barcode: '1234567890125'
+            barcode: '1234567890125',
+            quantity: '1',
+            unit: 'unidade',
+            unitDisplay: '1 unidade',
+            country: 'Portugal',
+            zone: 'Portugal'
         }
     ];
     
