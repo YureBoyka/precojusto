@@ -1,4 +1,4 @@
-// ============ DECLARE initializeAppData FIRST ============
+﻿// ============ DECLARE initializeAppData FIRST ============
 function initializeAppData() {
     console.log("Initializing app data...");
     // loadProducts removido - já é carregado pelo firebase-loader.js
@@ -300,11 +300,12 @@ document.addEventListener('DOMContentLoaded', () => { console.log('DOMConteudo i
         detailName.textContent = p.name;
         detailPrice.textContent = formatPrice(p.price);
         detailMeta.innerHTML = `
-            ${p.barcode ? `<div><strong>Código de Barras:</strong> <code style="background:#f0f8ff;padding:2px 6px;border-radius:4px;font-family:monospace;">${p.barcode}</code></div>` : ''}
+            <div><strong>Código de Barras:</strong> <code style="background:#f0f8ff;padding:2px 6px;border-radius:4px;font-family:monospace;">${p.barcode || 'N/A'}</code></div>
             <div><strong>Mercado:</strong> ${p.market || '—'}</div>
             <div><strong>Marca:</strong> ${p.brand || '—'}</div>
             <div><strong>Categoria:</strong> ${p.category || '—'}</div>
-            <div><strong>Unidade:</strong> ${(p.quantity || '1')} ${p.unit || 'unidade'}</div>
+            <div><strong>Unidade:</strong> ${p.unit || 'N/A'}</div>
+            <div><strong>País:</strong> ${p.country || 'N/A'}</div>
             ${p.zone ? `<div><strong>Zona:</strong> ${p.zone}</div>` : ''}
             ${p.parish ? `<div><strong>Freguesia:</strong> ${p.parish}</div>` : ''}
         `;
@@ -2379,11 +2380,12 @@ window.addEventListener('productsLoaded', (event) => {
         detailName.textContent = p.name;
         detailPrice.textContent = formatPrice(p.price);
         detailMeta.innerHTML = `
-            ${p.barcode ? `<div><strong>Código de Barras:</strong> <code style="background:#f0f8ff;padding:2px 6px;border-radius:4px;font-family:monospace;">${p.barcode}</code></div>` : ''}
+            <div><strong>Código de Barras:</strong> <code style="background:#f0f8ff;padding:2px 6px;border-radius:4px;font-family:monospace;">${p.barcode || 'N/A'}</code></div>
             <div><strong>Mercado:</strong> ${p.market || '—'}</div>
             <div><strong>Marca:</strong> ${p.brand || '—'}</div>
             <div><strong>Categoria:</strong> ${p.category || '—'}</div>
-            <div><strong>Unidade:</strong> ${(p.quantity || '1')} ${p.unit || 'unidade'}</div>
+            <div><strong>Unidade:</strong> ${p.unit || 'N/A'}</div>
+            <div><strong>País:</strong> ${p.country || 'N/A'}</div>
             ${p.zone ? `<div><strong>Zona:</strong> ${p.zone}</div>` : ''}
             ${p.parish ? `<div><strong>Freguesia:</strong> ${p.parish}</div>` : ''}
         `;
