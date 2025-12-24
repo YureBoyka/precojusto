@@ -7,12 +7,16 @@
     <title>Preço Certo</title>
     <meta name="theme-color" content="#2563eb">
     <script>
-        // Desabilita SW e limpa registros quando abrindo via file:// para evitar travas
+        // Desabilita SW e limpa registros quando abrindo via file:// ou localhost para evitar travas durante desenvolvimento
         (function(){
-            if (location.protocol === 'file:' && 'serviceWorker' in navigator) {
+            const isFile = location.protocol === 'file:';
+            const isLocalhost = /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
+            if ((isFile || isLocalhost) && 'serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
-                // Também limpa caches se disponíveis
                 if (window.caches) caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+                if (isLocalhost) {
+                    console.warn('Service Worker desabilitado em ambiente local para evitar cache/trava.');
+                }
             }
         })();
     </script>
@@ -23,7 +27,8 @@
             const alreadyRetried = sessionStorage.getItem(KEY) === '1';
             setTimeout(() => {
                 if (window.__precoJustoMainLoaded) return;
-                if (!alreadyRetried && 'serviceWorker' in navigator) {
+                const isLocalhost = /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
+                if (!alreadyRetried && 'serviceWorker' in navigator && !isLocalhost) {
                     sessionStorage.setItem(KEY, '1');
                     navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister())).finally(() => {
                         if (window.caches) caches.keys().then(keys => keys.forEach(k => caches.delete(k))).finally(() => location.reload());
@@ -840,9 +845,9 @@
         (function() {
             try {
                 if ('serviceWorker' in navigator) {
-                    // Se estiver rodando via file://, não registrar SW
-                    if (location.protocol === 'file:') {
-                        console.warn('Service Worker desabilitado em file://. Sirva via http://localhost.');
+                    // Se estiver rodando via file:// ou localhost, não registrar SW (evita travas em dev)
+                    if (location.protocol === 'file:' || /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname)) {
+                        console.warn('Service Worker desabilitado em ambiente local.');
                         return;
                     }
 
@@ -858,7 +863,7 @@
                             } catch(_) {}
                         });
                     }).finally(() => {
-                        navigator.serviceWorker.register('./service-worker.js?v=20251224-pathscope3')
+                        navigator.serviceWorker.register('./service-worker.js?v=20251224-pathscope4')
                             .then(reg => {
                                 console.log('SW registrado (index):', reg.scope);
                                 if (reg.waiting) { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
