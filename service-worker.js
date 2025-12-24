@@ -1,7 +1,7 @@
 // Root-scoped Service Worker (controls entire site)
 // Keep this file at the site root to ensure scope='/' in all browsers, including iOS Safari
-// Version bump to force updates on clients - UTF-8 encoding fix
-const CACHE_NAME = 'precomercado-v7-utf8';
+// Version bump to force updates on clients - UTF-8 encoding fix + category-inject
+const CACHE_NAME = 'precomercado-v8-categories';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -13,6 +13,7 @@ const APP_SHELL = [
   '/css/style-admin.css',
   '/js/script.js',
   '/js/admin.js',
+  '/js/category-inject.js',
   '/js/firebase-loader.js',
   '/js/firebase-init.js',
   '/images/icons/maskable-icon.svg',
