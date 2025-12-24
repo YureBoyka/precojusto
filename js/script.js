@@ -14,6 +14,9 @@ function initializeAppData() {
     }
 }
 
+// Marca que o script principal carregou para o watchdog
+window.__precoJustoMainLoaded = true;
+
 // Função para popular os filtros (chama updateFilterOptions quando disponível)
 function populateFilters() {
     console.log('📋 Populando filtros...');
