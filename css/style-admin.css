@@ -325,6 +325,34 @@ body.modal-open {
     margin-top: 20px;
 }
 
+.products-pagination {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.btn-page {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-page:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+    color: #475569;
+}
+
+.btn-page:not(:disabled):hover {
+    background: #1d4ed8;
+}
+
 #products-table {
     width: 100%;
     border-collapse: collapse;
@@ -347,6 +375,16 @@ body.modal-open {
 
 #products-table tr:hover {
     background-color: #f9f9f9;
+}
+
+/* Manter ações sempre visíveis em tabelas largas */
+#products-table th:last-child,
+#products-table td[data-label="Ações"] {
+    position: sticky;
+    right: 0;
+    background: #fff;
+    z-index: 2;
+    box-shadow: -4px 0 8px rgba(0,0,0,0.04);
 }
 
 .btn-action {
@@ -377,6 +415,63 @@ body.modal-open {
 
 .btn-accept:hover {
     background-color: #218838;
+}
+
+/* Markets management */
+.markets-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.market-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.market-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.market-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.market-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btn-small {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
 }
 
 .btn-reject {

@@ -816,10 +816,10 @@
             const loadParam = params.get('load');
             const requested = (loadParam || '').split(',').map(s => s.trim()).filter(Boolean);
 
-            // Em localhost/Live Server: o padrão é carregar o script principal (script.js)
-            // para garantir a listagem de produtos do Firebase. Se precisar do backup, use ?fixed=1
+            // Por padrão, em localhost/Live Server use a versão estável (script_fixed.js).
+            // Para usar o script novo, adicione ?new=1
             const isLocalhost = /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
-            const useFixed = params.get('fixed') === '1' && !window.__PJ_SAFE_MODE__;
+            const useNew = params.get('new') === '1' && !window.__PJ_SAFE_MODE__;
 
             const defaultSet = ['core', 'cat', 'scan', 'fb'];
             const enabled = requested.length ? requested : defaultSet;
@@ -827,7 +827,7 @@
             const has = (k) => enabled.includes(k);
 
             if (has('core')) {
-                if (isLocalhost && useFixed) {
+                if (isLocalhost && !useNew) {
                     document.write('<scr' + 'ipt src="js/script_fixed.js"></scr' + 'ipt>');
                 } else {
                     document.write('<scr' + 'ipt src="js/script.js"></scr' + 'ipt>');

@@ -17,6 +17,25 @@ function initializeAppData() {
 // Marca que o script principal carregou para o watchdog
 window.__precoJustoMainLoaded = true;
 
+// Flags de debug via URL
+// Ex: ?load=core (usado para diagnóstico) -> desabilitar recursos pesados como scanner
+try {
+    const params = new URLSearchParams(location.search);
+    const load = (params.get('load') || '').toLowerCase();
+    window.__PJ_CORE_ONLY__ = load === 'core';
+} catch (_) {
+    window.__PJ_CORE_ONLY__ = false;
+}
+
+// Failsafe: em modo seguro (?safe=1) não executar este script (evita travamento e permite abrir a página)
+try {
+    const params = new URLSearchParams(location.search);
+    if (params.get('safe') === '1') {
+        console.warn('script.js desabilitado em modo seguro.');
+        // Não inicializa nada
+    }
+} catch (_) {}
+
 // Função para popular os filtros (chama updateFilterOptions quando disponível)
 function populateFilters() {
     console.log('📋 Populando filtros...');
@@ -62,6 +81,21 @@ function updateCartBadge() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Modo diagnóstico:
+    // - ?safe=1  -> não inicializa nada pesado
+    // - ?load=core&init=N -> inicializa em níveis (1..4) para achar o trecho que trava
+    let initLevel = 4;
+    try {
+        const params = new URLSearchParams(location.search);
+        if (params.get('safe') === '1') {
+            console.warn('Modo seguro: inicialização desabilitada.');
+            return;
+        }
+        if (window.__PJ_CORE_ONLY__) {
+            initLevel = Math.max(0, Math.min(4, Number(params.get('init') || '1')));
+            console.warn('Modo core-only ativo. Nível init =', initLevel);
+        }
+    } catch (_) {}
     // Definir a URL da imagem padrão
     const DEFAULT_IMAGE_URL = "https://png.pngtree.com/png-vector/20241025/ourmid/png-tree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png";
 
@@ -1736,6 +1770,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Scanner de código de barras (usa BarcodeDetector quando disponível)
+    // Em modo core-only (diagnóstico), não inicializar scanner nem listeners globais.
+    if (window.__PJ_CORE_ONLY__) {
+        console.warn('Modo core-only ativo: scanner e listeners globais de modal foram desativados.');
+    }
     const scannerModal = document.getElementById('scanner-modal');
     const barcodeScannerEl = document.getElementById('barcode-scanner');
     const scannerMessage = document.getElementById('scanner-message');
@@ -1994,7 +2032,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    if (cameraSelect) {
+    if (!window.__PJ_CORE_ONLY__ && cameraSelect) {
         cameraSelect.addEventListener('change', (e) => {
             currentDeviceId = e.target.value;
             // Se o scanner estiver aberto, reinicia com a nova câmera
@@ -2007,22 +2045,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // abrir scanner ao clicar na imagem/banner
     const barcodeImg = document.querySelector('.barcode-img');
-    if (barcodeImg) {
+    if (!window.__PJ_CORE_ONLY__ && barcodeImg) {
         barcodeImg.addEventListener('click', (e) => { e.preventDefault(); startScanner(); });
     }
     // abrir scanner ao clicar no nome do CTA
     const barcodeSearchBtn2 = document.getElementById('barcode-search-btn');
-    if (barcodeSearchBtn2) {
+    if (!window.__PJ_CORE_ONLY__ && barcodeSearchBtn2) {
         barcodeSearchBtn2.addEventListener('click', (e) => { e.preventDefault(); startScanner(); });
     }
 
-    if (stopScannerBtn) stopScannerBtn.addEventListener('click', stopScanner);
+    if (!window.__PJ_CORE_ONLY__ && stopScannerBtn) stopScannerBtn.addEventListener('click', stopScanner);
     // Popula lista de câmeras ao carregar a página
-    populateCameraList();
+    if (!window.__PJ_CORE_ONLY__) populateCameraList();
 
     // Floating barcode button (centralizado aqui)
     const floatingBarcodeBtn = document.getElementById('floating-barcode-btn');
-    if (floatingBarcodeBtn) {
+    if (!window.__PJ_CORE_ONLY__ && floatingBarcodeBtn) {
         floatingBarcodeBtn.addEventListener('click', (e) => {
             e.preventDefault();
             populateCameraList().finally(() => startScanner());
@@ -2047,8 +2085,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Adicionar listeners para diferentes tipos de scroll
-    document.addEventListener('wheel', preventScroll, { passive: false });
-    document.addEventListener('touchmove', preventScroll, { passive: false });
+    // initLevel 4: habilita lock de scroll (mobile)
+    if (!window.__PJ_CORE_ONLY__ || initLevel >= 4) {
+        // IMPORTANTE: listener global de wheel com preventDefault pode travar a página em desktops.
+        // Mantemos apenas para touch (mobile).
+        document.addEventListener('touchmove', preventScroll, { passive: false });
+    }
     document.addEventListener('keydown', (e) => {
         const hasLockClass = document.body.classList.contains('modal-open');
         const anyModalOpen = !!document.querySelector('.modal.show');
@@ -2065,10 +2107,13 @@ document.addEventListener('DOMContentLoaded', () => {
     window.filterProductsByBarcode = filterProductsByBarcode;
 
     // Chamar initializeAppData após configurar tudo
-    try {
-        initializeAppData();
-    } catch (e) {
-        console.error('Erro ao inicializar dados:', e);
+    // initLevel 1: só funções leves e render inicial
+    if (!window.__PJ_CORE_ONLY__ || initLevel >= 1) {
+        try {
+            initializeAppData();
+        } catch (e) {
+            console.error('Erro ao inicializar dados:', e);
+        }
     }
 
     // Listener para quando os produtos forem carregados do Firebase
@@ -2111,17 +2156,6 @@ window.addEventListener('load', () => {
         }
     } catch (e) {
         console.warn('Falha no fallback de renderização:', e);
-    }
-
-    // Registrar Service Worker para PWA
-    try {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/js/service-worker.js')
-                .then(reg => console.log('ServiceWorker registrado (index):', reg.scope))
-                .catch(err => console.error('Falha ao registrar ServiceWorker:', err));
-        }
-    } catch (err) {
-        console.warn('ServiceWorker não suportado ou erro:', err);
     }
 
 });

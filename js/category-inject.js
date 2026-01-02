@@ -87,10 +87,6 @@
                         window.openProductDetail(p.id);
                         return;
                     }
-                    if (typeof window.navigateTo === 'function') {
-                        window.navigateTo(`produto.html?id=${p.id}`);
-                        return;
-                    }
                     window.location.href = `produto.html?id=${p.id}`;
                 });
                 categoryProductsGrid.appendChild(card);

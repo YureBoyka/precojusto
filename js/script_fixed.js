@@ -58,6 +58,42 @@ function updateCartBadge() {
     }
 }
 
+// Imagem placeholder leve (1x1 GIF) para permitir lazy-load sem quebrar o layout
+const __PJ_PLACEHOLDER_IMG =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
+// Lazy-load simples para imagens (evita disparar dezenas/centenas de requests no primeiro paint)
+function __pjSetupLazyImages(root = document) {
+    const imgs = Array.from(root.querySelectorAll('img[data-src]'));
+    if (!imgs.length) return;
+
+    const loadImg = (img) => {
+        const src = img.getAttribute('data-src');
+        if (!src) return;
+        img.src = src;
+        img.removeAttribute('data-src');
+    };
+
+    if (!('IntersectionObserver' in window)) {
+        imgs.forEach(loadImg);
+        return;
+    }
+
+    const io = new IntersectionObserver(
+        (entries) => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                const img = entry.target;
+                io.unobserve(img);
+                loadImg(img);
+            }
+        },
+        { root: null, rootMargin: '250px 0px', threshold: 0.01 }
+    );
+
+    imgs.forEach((img) => io.observe(img));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Definir a URL da imagem padrão
     const DEFAULT_IMAGE_URL = "https://png.pngtree.com/png-vector/20241025/ourmid/png-tree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png";
@@ -233,7 +269,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const favButtonClass = isFavorite ? 'favorite-btn active' : 'favorite-btn';
         
         productCard.innerHTML = `
-            <img src="${product.imageUrl || DEFAULT_IMAGE_URL}" alt="${product.name}" class="product-image">
+            <img
+                src="${__PJ_PLACEHOLDER_IMG}"
+                data-src="${product.imageUrl || DEFAULT_IMAGE_URL}"
+                alt="${product.name}"
+                class="product-image"
+                loading="lazy"
+                decoding="async">
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
                 <p class="product-price">${formatPrice(product.price)}</p>
@@ -278,79 +320,436 @@ document.addEventListener('DOMContentLoaded', () => {
                 openModal(modal);
             });
         }
+        // ativa lazy-load no card recém-criado
+        __pjSetupLazyImages(productCard);
         return productCard;
     };
 
-    // Product detail modal logic
-    const productDetailModal = document.getElementById('product-detail-modal');
-    const closeProductDetailBtn = document.getElementById('close-product-detail');
-    const detailImage = document.getElementById('detail-image');
-    const detailName = document.getElementById('detail-name');
-    const detailPrice = document.getElementById('detail-price');
-    const detailMeta = document.getElementById('detail-meta');
-    const detailDescription = document.getElementById('detail-description');
-    const detailFavBtn = document.getElementById('detail-fav');
-    const detailCartBtn = document.getElementById('detail-cart');
-    const detailCompareBtn = document.getElementById('detail-compare');
+    // ================================
+    // Detalhes do produto (PADRÃO)
+    // ================================
+    // Agora o padrão é abrir um modal flutuante moderno (sem navegar para outra página)
+    // para ficar mais rápido e manter a experiência consistente.
 
-    const openProductDetail = (productId) => {
+    const pjProductModal = document.getElementById('pj-product-modal');
+    const pjProductModalBody = document.getElementById('pj-product-modal-body');
+    const pjCloseProductModalBtn = document.getElementById('pj-close-product-modal');
+
+    const pjEsc = (v) => {
+        const s = (v ?? '').toString();
+        return s
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
+    const pjOpenModal = () => {
+        if (!pjProductModal) return;
+        pjProductModal.classList.remove('closing');
+        pjProductModal.classList.add('show');
+        pjProductModal.style.display = 'flex';
+        // trava scroll do body (mais leve do que listeners)
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => pjProductModal.classList.add('visible'), 10);
+    };
+
+    const pjCloseModal = () => {
+        if (!pjProductModal) return;
+        pjProductModal.classList.remove('visible');
+        pjProductModal.classList.add('closing');
+        setTimeout(() => {
+            pjProductModal.classList.remove('show', 'closing');
+            pjProductModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }, 200);
+    };
+
+    if (pjCloseProductModalBtn) pjCloseProductModalBtn.addEventListener('click', pjCloseModal);
+    if (pjProductModal) {
+        pjProductModal.addEventListener('click', (e) => {
+            if (e.target === pjProductModal) pjCloseModal();
+        });
+    }
+
+    // Funções globais usadas por botões do modal (mantém compatibilidade)
+    // OBS: importante: padronizar com o que o produto.html usa (localStorage)
+    // - Favoritos: localStorage('favoriteProducts') -> array de IDs
+    // - Carrinho:  localStorage('shoppingCart')     -> array { productId, quantity, addedAt }
+    // - Sugestões: localStorage('priceSuggestions') -> array de sugestões
+
+    const __pjGetFavoriteIds = () => {
+        try {
+            const ids = JSON.parse(localStorage.getItem('favoriteProducts') || '[]');
+            return Array.isArray(ids) ? ids.map(String) : [];
+        } catch (_) {
+            return [];
+        }
+    };
+
+    const __pjSetFavoriteIds = (ids) => {
+        localStorage.setItem('favoriteProducts', JSON.stringify(ids));
+    };
+
+    const __pjGetShoppingCart = () => {
+        try {
+            const cart = JSON.parse(localStorage.getItem('shoppingCart') || '[]');
+            return Array.isArray(cart) ? cart : [];
+        } catch (_) {
+            return [];
+        }
+    };
+
+    const __pjSetShoppingCart = (cart) => {
+        localStorage.setItem('shoppingCart', JSON.stringify(cart));
+    };
+
+    const __pjUpsertPriceSuggestion = (suggestion) => {
+        try {
+            const list = JSON.parse(localStorage.getItem('priceSuggestions') || '[]');
+            const arr = Array.isArray(list) ? list : [];
+            arr.push(suggestion);
+            localStorage.setItem('priceSuggestions', JSON.stringify(arr));
+        } catch (_) {
+            localStorage.setItem('priceSuggestions', JSON.stringify([suggestion]));
+        }
+    };
+
+    const __pjFindMarketLogo = (marketName) => {
+        try {
+            const markets = JSON.parse(localStorage.getItem('markets') || '[]');
+            if (!Array.isArray(markets)) return '';
+            const m = markets.find(x => (x?.name || '').toString().toLowerCase().trim() === (marketName || '').toString().toLowerCase().trim());
+            return (m && m.logo) ? m.logo : '';
+        } catch (_) {
+            return '';
+        }
+    };
+
+    // Toast simples (mensagem flutuante) para feedback de ações
+    let __pjToastTimer = null;
+    const __pjToast = (message) => {
+        try {
+            if (!message) return;
+            let host = document.getElementById('pj-toast-host');
+            if (!host) {
+                host = document.createElement('div');
+                host.id = 'pj-toast-host';
+                host.setAttribute(
+                    'style',
+                    [
+                        'position:fixed',
+                        'inset:0',
+                        'z-index:2147483647',
+                        'pointer-events:none'
+                    ].join(';')
+                );
+                (document.documentElement || document.body).appendChild(host);
+            }
+
+            // Ensure it stays last in DOM so it paints above other same-root siblings
+            const root = document.documentElement || document.body;
+            if (host.parentNode !== root) {
+                try { root.appendChild(host); } catch (_) {}
+            } else if (host !== root.lastElementChild) {
+                try { root.appendChild(host); } catch (_) {}
+            }
+
+            let el = document.getElementById('pj-toast');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'pj-toast';
+                el.setAttribute(
+                    'style',
+                    [
+                        'position:fixed',
+                        'right:18px',
+                        'top:18px',
+                        'left:auto',
+                        'bottom:auto',
+                        'transform:translateY(-6px)',
+                        'background:rgba(17,24,39,.95)',
+                        'color:#fff',
+                        'padding:10px 14px',
+                        'border-radius:999px',
+                        'font-weight:700',
+                        'font-size:14px',
+                        'z-index:2147483647',
+                        'box-shadow:0 10px 25px rgba(0,0,0,.25)',
+                        'opacity:0',
+                        'transition:opacity .18s ease, transform .18s ease',
+                        'max-width:min(520px, calc(100vw - 36px))',
+                        'white-space:nowrap',
+                        'overflow:hidden',
+                        'text-overflow:ellipsis'
+                    ].join(';')
+                );
+                host.appendChild(el);
+            }
+
+            el.textContent = message;
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+
+            if (__pjToastTimer) window.clearTimeout(__pjToastTimer);
+            __pjToastTimer = window.setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(-6px)';
+            }, 1400);
+        } catch (_) {}
+    };
+
+    window.__pjToggleFavorite = (productId) => {
+        const id = String(productId);
+        const ids = __pjGetFavoriteIds();
+        const exists = ids.includes(id);
+        const next = exists ? ids.filter(x => x !== id) : [id, ...ids];
+        __pjSetFavoriteIds(next);
+        const btn = document.getElementById('pj-modal-fav-btn');
+        if (btn) btn.classList.toggle('active', !exists);
+
+        __pjToast(exists ? 'Removido dos favoritos' : 'Adicionado aos favoritos');
+
+        // também tenta atualizar a lista de favoritos do app (se existir)
+        if (typeof renderFavorites === 'function') renderFavorites();
+    };
+
+    window.__pjAddToCart = (productId) => {
+        const id = String(productId);
+        const cart = __pjGetShoppingCart();
+        const existing = cart.find(it => String(it.productId) === id);
+        if (existing) existing.quantity = (existing.quantity || 1) + 1;
+        else cart.push({ productId: id, quantity: 1, addedAt: Date.now() });
+        __pjSetShoppingCart(cart);
+
+        // Mantém o carrinho do app (sessionStorage('cart')) sincronizado com objetos de produto + quantity
+        let mapped = [];
+        try {
+            const products = getFromLocalStorage('products');
+            mapped = cart
+                .map(it => {
+                    const p = products.find(x => String(x.id) === String(it.productId));
+                    if (!p) return null;
+                    const copy = Object.assign({}, p);
+                    copy.quantity = it.quantity || 1;
+                    return copy;
+                })
+                .filter(Boolean);
+            sessionStorage.setItem('cart', JSON.stringify(mapped));
+        } catch (_) {}
+
+        // Feedback visual (igual ao Favorito)
+        const btn = document.getElementById('pj-modal-cart-btn');
+        if (btn) {
+            btn.classList.add('active');
+            const prevBg = btn.style.background;
+            const prevBorder = btn.style.borderColor;
+            btn.style.background = '#dcfce7';
+            btn.style.borderColor = '#22c55e';
+            window.setTimeout(() => {
+                btn.classList.remove('active');
+                btn.style.background = prevBg;
+                btn.style.borderColor = prevBorder;
+            }, 650);
+        }
+
+        __pjToast('Adicionado ao carrinho');
+
+        if (typeof updateCartBadge === 'function') updateCartBadge();
+        if (typeof renderCartItems === 'function') renderCartItems();
+
+        // NÃO abre o modal do carrinho automaticamente (só adiciona + badge + feedback)
+    };
+
+    window.__pjOpenSuggest = (productId) => {
         const products = getFromLocalStorage('products');
         const p = products.find(x => String(x.id) === String(productId));
         if (!p) return;
-        detailImage.src = p.imageUrl || DEFAULT_IMAGE_URL;
-        detailName.textContent = p.name;
-        detailPrice.textContent = formatPrice(p.price);
-        detailMeta.innerHTML = `
-            <div><strong>Código de Barras:</strong> <code style="background:#f0f8ff;padding:2px 6px;border-radius:4px;font-family:monospace;">${p.barcode || 'N/A'}</code></div>
-            <div><strong>Mercado:</strong> ${p.market || '—'}</div>
-            <div><strong>Marca:</strong> ${p.brand || '—'}</div>
-            <div><strong>Categoria:</strong> ${p.category || '—'}</div>
-            <div><strong>Unidade:</strong> ${p.unit || 'N/A'}</div>
-            <div><strong>País:</strong> ${p.country || 'N/A'}</div>
-            ${p.zone ? `<div><strong>Zona:</strong> ${p.zone}</div>` : ''}
-            ${p.parish ? `<div><strong>Freguesia:</strong> ${p.parish}</div>` : ''}
-        `;
-        detailDescription.textContent = p.description || '';
-        
-        // Mostrar/ocultar seção de descrição
-        const descriptionContainer = document.getElementById('detail-description-container');
-        if (p.description && p.description.trim()) {
-            descriptionContainer.style.display = 'block';
-        } else {
-            descriptionContainer.style.display = 'none';
+
+        // Se o modal do index existir, usa ele (UX melhor).
+        const modal = document.getElementById('suggestion-modal');
+        if (modal) {
+            // garante que o modal de sugestão fique na frente do modal do produto
+            try { modal.style.zIndex = '300000'; } catch (_) {}
+            const idInput = document.getElementById('modal-suggestion-product-id');
+            const nameInput = document.getElementById('modal-suggestion-product-name');
+            const marketInput = document.getElementById('modal-suggestion-market');
+            if (idInput) idInput.value = p.id;
+            if (nameInput) nameInput.value = p.name;
+            if (marketInput) marketInput.value = p.market || '';
+
+            // abre depois de um tick pra evitar disputa de z-index/paint com o modal de produto
+            window.setTimeout(() => {
+                if (typeof openModal === 'function') openModal(modal);
+                else {
+                    modal.style.display = 'flex';
+                    modal.classList.add('show');
+                }
+            }, 0);
+            return;
         }
 
-        // set fav state on detail
-        const favs = getFromSessionStorage('favorites');
-        if (favs.some(f => String(f.id) === String(p.id))) detailFavBtn.classList.add('active'); else detailFavBtn.classList.remove('active');
-
-        // bind actions
-        detailFavBtn.onclick = () => {
-            let favorites = getFromSessionStorage('favorites');
-            const exists = favorites.some(f => String(f.id) === String(p.id));
-            if (exists) favorites = favorites.filter(f => String(f.id) !== String(p.id)); else favorites.push(p);
-            saveToSessionStorage('favorites', favorites);
-            renderFavorites();
-            renderProducts();
-            detailFavBtn.classList.toggle('active');
-            if (!exists) alert(`${p.name} adicionado aos favoritos!`);
-        };
-
-        detailCartBtn.onclick = () => {
-            const cart = getFromSessionStorage('cart');
-            const existing = cart.find(i => String(i.id) === String(p.id));
-            if (existing) existing.quantity = (existing.quantity || 1) + 1; else { const copy = Object.assign({}, p); copy.quantity = 1; cart.push(copy); }
-            saveToSessionStorage('cart', cart);
-            renderCartItems();
-            alert(`${p.name} adicionado ao carrinho!`);
-        };
-
-    detailCompareBtn.onclick = () => { closeModal(productDetailModal); openCompareModal(p.name); };
-
-        openModal(productDetailModal);
+        // Fallback (sem modal): salva sugestão no localStorage no mesmo formato do produto.html
+        const price = prompt(`💰 Sugerir preço para "${p.name}":\n\nDigite o preço em euros (ex: 2.50):`);
+        if (price && !isNaN(parseFloat(price))) {
+            __pjUpsertPriceSuggestion({
+                productId: String(p.id),
+                productName: p.name,
+                price: parseFloat(price),
+                suggestedAt: Date.now(),
+                status: 'pending'
+            });
+        }
     };
 
-    if (closeProductDetailBtn) closeProductDetailBtn.addEventListener('click', () => closeModal(productDetailModal));
+    const renderModernProductModal = (p) => {
+        if (!pjProductModalBody) return;
+    const isFav = __pjGetFavoriteIds().includes(String(p.id));
+
+    const barcodeValue = (p.barcode || p.codigoBarras || p.barCode || '').toString().trim();
+    const hasBarcode = !!barcodeValue;
+
+    // Unidade: tenta compor "quantidade + unidade" se existir
+    const qty = (p.quantity ?? p.quantidade ?? '').toString().trim();
+    const unit = (p.unit ?? p.unidade ?? '').toString().trim();
+    let unitLabel = '';
+    if (qty && unit) unitLabel = `${qty}${unit}`; // ex: 1kg, 500ml
+    else if (unit) unitLabel = unit;
+    else if (qty) unitLabel = qty;
+
+    const marketName = (p.market || p.mercado || '').toString().trim();
+    const marketLogo = __pjFindMarketLogo(marketName);
+
+        pjProductModalBody.innerHTML = `
+            <div style="background:#fff;border-radius:12px;overflow:hidden;">
+                <div style="padding:16px 16px 8px 16px;display:flex;flex-direction:column;gap:12px;">
+                    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+                        <div style="flex:0 0 auto;">
+                            <img
+                                src="${__PJ_PLACEHOLDER_IMG}"
+                                data-src="${pjEsc(p.imageUrl || DEFAULT_IMAGE_URL)}"
+                                alt="${pjEsc(p.name)}"
+                                style="width:160px;height:160px;object-fit:cover;border-radius:10px;border:1px solid #e5e7eb;background:#f9fafb;"
+                                loading="lazy" decoding="async" />
+                        </div>
+                        <div style="flex:1;min-width:240px;">
+                            <div style="font-size:26px;font-weight:800;color:#111827;line-height:1.15;">${pjEsc(p.name)}</div>
+                            <div style="margin-top:8px;font-size:30px;font-weight:900;color:#4f46e5;">€${Number(p.price || 0).toFixed(2).replace('.', ',')}</div>
+                            <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;">
+                                <button id="pj-modal-fav-btn" class="favorite-btn${isFav ? ' active' : ''}" onclick="window.__pjToggleFavorite('${pjEsc(p.id)}')" style="padding:10px 14px;border-radius:10px;border:1px solid #fecaca;background:#fff;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                    <i class="fas fa-heart"></i>
+                                    <span>Favorito</span>
+                                </button>
+                                <button id="pj-modal-cart-btn" onclick="window.__pjAddToCart('${pjEsc(p.id)}')" style="padding:10px 14px;border-radius:10px;border:1px solid #bbf7d0;background:#fff;display:flex;align-items:center;gap:8px;cursor:pointer;transition:transform .08s ease, background .2s ease, border-color .2s ease;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    <span>Carrinho</span>
+                                </button>
+                                <button onclick="window.__pjOpenSuggest('${pjEsc(p.id)}')" style="padding:10px 14px;border-radius:10px;border:1px solid #fde68a;background:#fff;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                    <i class="fas fa-tag"></i>
+                                    <span>Sugerir Preço</span>
+                                </button>
+                                <button id="pj-modal-compare-btn" style="padding:10px 16px;border-radius:10px;border:none;background:#2563eb;color:#fff;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                    <i class="fas fa-balance-scale"></i>
+                                    <span>Comparar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:8px;">
+                        ${hasBarcode ? `
+                        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 12px;">
+                            <div style="font-size:12px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:.04em;">
+                                <i class="fas fa-barcode"></i> Código de Barras
+                            </div>
+                            <div style="margin-top:4px;font-family:monospace;font-size:13px;color:#1e3a8a;word-break:break-all;">${pjEsc(barcodeValue)}</div>
+                        </div>` : ''}
+
+                        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:center;">
+                            <div style="flex:0 0 auto;width:34px;height:34px;border-radius:8px;border:1px solid #e5e7eb;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;">
+                                <img src="${pjEsc(marketLogo || 'images/icons/icon-192.png')}" alt="Logo" style="width:100%;height:100%;object-fit:contain;" loading="lazy" decoding="async">
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.04em;">
+                                    <i class="fas fa-store"></i> Mercado
+                                </div>
+                                <div style="margin-top:2px;font-size:14px;color:#111827;">${pjEsc(marketName || '—')}</div>
+                            </div>
+                        </div>
+
+                        ${p.brand ? `
+                        <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;padding:10px 12px;">
+                            <div style="font-size:12px;font-weight:700;color:#6b21a8;text-transform:uppercase;letter-spacing:.04em;">
+                                <i class="fas fa-tag"></i> Marca
+                            </div>
+                            <div style="margin-top:4px;font-size:14px;color:#3b0764;">${pjEsc(p.brand)}</div>
+                        </div>` : ''}
+
+                        ${p.category ? `
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;">
+                            <div style="font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.04em;">
+                                <i class="fas fa-list"></i> Categoria
+                            </div>
+                            <div style="margin-top:4px;font-size:14px;color:#14532d;">${pjEsc(p.category)}</div>
+                        </div>` : ''}
+
+                        ${unitLabel ? `
+                        <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px;">
+                            <div style="font-size:12px;font-weight:700;color:#9a3412;text-transform:uppercase;letter-spacing:.04em;">
+                                <i class="fas fa-weight"></i> Unidade
+                            </div>
+                            <div style="margin-top:4px;font-size:14px;color:#7c2d12;font-weight:700;">${pjEsc(unitLabel)}</div>
+                        </div>` : ''}
+
+                        ${p.country ? `
+                        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;">
+                            <div style="font-size:12px;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:.04em;">
+                                <i class="fas fa-globe"></i> País
+                            </div>
+                            <div style="margin-top:4px;font-size:14px;color:#7f1d1d;font-weight:700;">${pjEsc(p.country)}</div>
+                        </div>` : ''}
+                    </div>
+
+                    ${p.description ? `
+                    <div style="margin-top:6px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px;">
+                        <div style="font-size:12px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Descrição</div>
+                        <div style="color:#374151;line-height:1.55;">${pjEsc(p.description)}</div>
+                    </div>` : ''}
+                </div>
+            </div>
+        `;
+
+        // lazy-load da imagem dentro do modal
+        __pjSetupLazyImages(pjProductModalBody);
+
+        // bind actions (evita problemas de escopo de onclick inline)
+        try {
+            const compareBtn = document.getElementById('pj-modal-compare-btn');
+            if (compareBtn) {
+                compareBtn.onclick = () => {
+                    try {
+                        const fn = window.openCompareModal;
+                        if (typeof fn === 'function') fn(p.name);
+                    } catch (_) {}
+                };
+            }
+        } catch (_) {}
+    };
+
+    const openProductDetail = (productId) => {
+        if (!productId && productId !== 0) return;
+        const products = getFromLocalStorage('products');
+        const p = products.find(x => String(x.id) === String(productId));
+        if (!p) {
+            // fallback: se não achar, navega (evita tela vazia)
+            window.location.href = `produto.html?id=${encodeURIComponent(String(productId))}`;
+            return;
+        }
+        renderModernProductModal(p);
+        pjOpenModal();
+    };
+    window.openProductDetail = openProductDetail;
 
     // Criação do item de lista para os modais (carrinho e favoritos)
     const createModalListItem = (product, isCartItem = false) => {
@@ -368,7 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ` : '';
 
         listItem.innerHTML = `
-            <img src="${product.imageUrl || DEFAULT_IMAGE_URL}" alt="${product.name}" class="modal-item-image">
+            <img src="${product.imageUrl || DEFAULT_IMAGE_URL}" alt="${product.name}" class="modal-item-image" loading="lazy" decoding="async">
             <div class="modal-item-info">
                 <h4 class="modal-item-name">${product.name}</h4>
                 <p class="modal-item-price">${formatPrice(product.price)}</p>
@@ -400,6 +799,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 productsList.appendChild(productCard);
             });
         }
+
+        // garante lazy-load para qualquer imagem pendente
+        __pjSetupLazyImages(productsList);
+
         // Garante que o estado dos botões é verificado após a renderização
         setTimeout(manageScrollButtons, 100);
     };
@@ -788,6 +1191,9 @@ document.addEventListener('DOMContentLoaded', () => {
             showCompareItemDetail(id);
         };
     };
+
+    // Disponibiliza globalmente para uso em onclick e outros scripts
+    window.openCompareModal = openCompareModal;
 
     // Render compare as a full-page view (mobile UX) with back navigation
     const openComparePage = (productName, columnsWrap) => {
@@ -1554,15 +1960,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Evento de submissão do formulário de sugestão
     modalSuggestionForm.addEventListener('submit', (e) => {
+        // Se já foi tratado por outro handler, não faz nada (evita duplicar salvamento/validação)
+        if (e.__pjHandled) return;
         e.preventDefault();
         
         const productId = modalSuggestionProductId.value;
         const productName = modalSuggestionProductName.value;
         const market = modalSuggestionMarket.value;
-    const suggestedPrice = modalSuggestionNewPrice.value;
+        const suggestedPriceRaw = (modalSuggestionNewPrice.value || '').toString().trim();
+        // Aceita vírgula ou ponto como separador decimal
+        const normalized = suggestedPriceRaw.replace(',', '.');
+        const suggestedNumber = parseFloat(normalized);
         
-        if (!suggestedPrice) {
-            alert('Por favor, insira um preço válido.');
+        if (!suggestedPriceRaw || !Number.isFinite(suggestedNumber) || suggestedNumber <= 0) {
+            if (typeof __pjToast === 'function') __pjToast('Por favor, insira um preço válido.');
+            else alert('Por favor, insira um preço válido.');
             return;
         }
 
@@ -1571,7 +1983,7 @@ document.addEventListener('DOMContentLoaded', () => {
             productId,
             productName,
             market,
-            suggestedPrice: parseFloat(suggestedPrice).toFixed(2),
+            suggestedPrice: suggestedNumber.toFixed(2),
             date: new Date().toISOString()
         };
 
@@ -1579,8 +1991,9 @@ document.addEventListener('DOMContentLoaded', () => {
         suggestions.push(newSuggestion);
         saveToLocalStorage('suggestions', suggestions); // Salva no localStorage
 
-    alert('Sua sugestão foi enviada com sucesso e será analisada pela administração!');
-    closeModal(suggestionModal);
+        if (typeof __pjToast === 'function') __pjToast('Sugestão enviada! Obrigado.');
+        else alert('Sua sugestão foi enviada com sucesso e será analisada pela administração!');
+        closeModal(suggestionModal);
         modalSuggestionForm.reset();
     });
 
@@ -3624,37 +4037,6 @@ window.addEventListener('productsLoaded', (event) => {
         renderProducts(); // Atualiza a tela principal para desmarcar o coração
     });
 
-    // Evento de submissão do formulário de sugestão
-    modalSuggestionForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const productId = modalSuggestionProductId.value;
-        const productName = modalSuggestionProductName.value;
-        const market = modalSuggestionMarket.value;
-    const suggestedPrice = modalSuggestionNewPrice.value;
-        
-        if (!suggestedPrice) {
-            alert('Por favor, insira um preço válido.');
-            return;
-        }
-
-        const newSuggestion = {
-            id: Date.now(),
-            productId,
-            productName,
-            market,
-            suggestedPrice: parseFloat(suggestedPrice).toFixed(2),
-            date: new Date().toISOString()
-        };
-
-        const suggestions = getFromLocalStorage('suggestions'); // Sugestões persistem
-        suggestions.push(newSuggestion);
-        saveToLocalStorage('suggestions', suggestions); // Salva no localStorage
-
-    alert('Sua sugestão foi enviada com sucesso e será analisada pela administração!');
-    closeModal(suggestionModal);
-        modalSuggestionForm.reset();
-    });
 
     // Funções para bloquear/desbloquear scroll da página
     const lockBodyScroll = () => {

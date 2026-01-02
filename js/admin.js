@@ -195,6 +195,7 @@ class BarcodeProductSearch {
                     } else {
                         query = '';
                     }
+
                     modal.style.display = 'flex';
                     modal.dataset.query = query;
                     
@@ -211,7 +212,7 @@ class BarcodeProductSearch {
                     if (resultsDiv) resultsDiv.innerHTML = '';
                     // Preenche chave salva (se existir)
                     try {
-                        const savedKey = localStorage.getItem('serpapi_key');
+                        const savedKey = ensureSerpApiKey();
                         const serpapiKeyInput = document.getElementById('serpapi-key');
                         if (savedKey && serpapiKeyInput && !serpapiKeyInput.value) {
                             serpapiKeyInput.value = savedKey;
@@ -281,7 +282,16 @@ class BarcodeProductSearch {
                 const serpapiKeyInput = document.getElementById('serpapi-key');
                 const saveKeyBtn = document.getElementById('save-serpapi-key');
                 const testKeyBtn = document.getElementById('test-serpapi-key');
+                const deleteKeyBtn = document.getElementById('delete-serpapi-key');
                 const keyStatus = document.getElementById('serpapi-key-status');
+
+                // Prefill com chave persistida ou padrão
+                try {
+                    const initialKey = ensureSerpApiKey();
+                    if (initialKey && serpapiKeyInput && !serpapiKeyInput.value) {
+                        serpapiKeyInput.value = initialKey;
+                    }
+                } catch (_) {}
 
                 // Adiciona container para resultados se não existir
                 if (!document.getElementById('serpapi-image-results')) {
@@ -321,6 +331,7 @@ class BarcodeProductSearch {
                         if (!key) return;
                         try {
                             localStorage.setItem('serpapi_key', key);
+                            localStorage.setItem('serpapi_key_deleted', 'false');
                             if (keyStatus) {
                                 keyStatus.style.display = 'block';
                                 keyStatus.textContent = 'Chave salva!';
@@ -333,7 +344,7 @@ class BarcodeProductSearch {
                     testKeyBtn.onclick = () => {
                         let key = serpapiKeyInput.value.trim();
                         if (!key) {
-                            try { key = localStorage.getItem('serpapi_key') || ''; } catch(_) {}
+                            try { key = ensureSerpApiKey(); } catch(_) {}
                         }
                         if (!key) {
                             if (keyStatus) {
@@ -350,11 +361,27 @@ class BarcodeProductSearch {
                         
                         // Salva a chave e mostra mensagem
                         try { localStorage.setItem('serpapi_key', key); } catch(_) {}
+                        try { localStorage.setItem('serpapi_key_deleted', 'false'); } catch(_) {}
                         if (keyStatus) {
                             keyStatus.style.display = 'block';
                             keyStatus.style.color = '#2563eb';
                             keyStatus.textContent = 'Teste aberto em nova aba. Se ver JSON com account_status: "Active", está válida!';
                             setTimeout(() => keyStatus.style.display = 'none', 5000);
+                        }
+                    };
+                }
+                if (deleteKeyBtn) {
+                    deleteKeyBtn.onclick = () => {
+                        try {
+                            localStorage.removeItem('serpapi_key');
+                            localStorage.setItem('serpapi_key_deleted', 'true');
+                        } catch (_) {}
+                        if (serpapiKeyInput) serpapiKeyInput.value = '';
+                        if (keyStatus) {
+                            keyStatus.style.display = 'block';
+                            keyStatus.style.color = '#dc2626';
+                            keyStatus.textContent = 'Chave removida. Cole uma nova se desejar alterar.';
+                            setTimeout(() => keyStatus.style.display = 'none', 2500);
                         }
                     };
                 }
@@ -365,7 +392,7 @@ class BarcodeProductSearch {
                         let apiKey = serpapiKeyInput.value.trim();
                         if (!apiKey) {
                             try {
-                                const saved = localStorage.getItem('serpapi_key');
+                                const saved = ensureSerpApiKey();
                                 if (saved) {
                                     apiKey = saved;
                                     serpapiKeyInput.value = saved;
@@ -2739,7 +2766,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEFAULT_IMAGE_URL = "https://png.pngtree.com/png-vector/20241025/ourmid/pngtree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png";
     
     // API KEY do SerpAPI (gravada no código)
-    const SERPAPI_KEY = "d27f53a7fa18f2cda6c4dd5a929c0f9f9c7d3e4a1a3ac8b5c00d38f6f2f03d62";
+    const SERPAPI_KEY = "3715e169cdfd012e63b63b8e9328991cee1096c3a1c4f32b5e5cc41572c7bad1";
+    const ensureSerpApiKey = () => {
+        let stored = '';
+        let deletedFlag = 'false';
+        try {
+            stored = localStorage.getItem('serpapi_key') || '';
+            deletedFlag = localStorage.getItem('serpapi_key_deleted') || 'false';
+        } catch (_) {}
+
+        // Se nunca deletou manualmente e não há nada salvo, grava a padrão
+        if (!stored && SERPAPI_KEY && deletedFlag !== 'true') {
+            stored = SERPAPI_KEY;
+            try { localStorage.setItem('serpapi_key', stored); } catch (_) {}
+        }
+        return stored;
+    };
+
+    // Prefill imediato ao carregar o painel/admin
+    (() => {
+        try {
+            const key = ensureSerpApiKey();
+            const serpapiKeyInput = document.getElementById('serpapi-key');
+            if (serpapiKeyInput && key) {
+                serpapiKeyInput.value = key;
+            }
+        } catch (_) {}
+    })();
 
     // Elementos do DOM
     const productForm = document.getElementById('product-form');
@@ -2762,6 +2815,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const useDefaultImageRadio = document.getElementById('use-default-image');
     const useCustomImageRadio = document.getElementById('use-custom-image');
     const imageUrlGroup = document.querySelector('.image-url-group');
+    // Markets tab
+    const marketForm = document.getElementById('market-form');
+    const marketNameInput = document.getElementById('market-name');
+    const marketLogoInput = document.getElementById('market-logo');
+    const marketIdInput = document.getElementById('market-id');
+    const cancelEditMarketBtn = document.getElementById('cancel-edit-market-btn');
 
     // Elementos do leitor de código de barras (adicionados no HTML)
     const productBarcodeInput = document.getElementById('product-barcode');
@@ -3073,8 +3132,218 @@ document.addEventListener('DOMContentLoaded', () => {
         return JSON.parse(localStorage.getItem(key)) || [];
     };
 
-    const updateCounts = () => {
+    // -------- Mercados --------
+    const MARKETS_KEY = 'markets';
+    const defaultMarkets = [
+        { name: 'Continente', logo: '' },
+        { name: 'Pingo Doce', logo: '' },
+        { name: 'Lidl', logo: '' },
+        { name: 'Makro', logo: '' },
+        { name: 'Recheio', logo: '' },
+        { name: 'Aldi', logo: '' },
+        { name: 'Auchan', logo: '' },
+        { name: 'Minipreço', logo: '' },
+        { name: 'Mercadona', logo: '' },
+        { name: 'Outro', logo: '' }
+    ];
+
+    const ensureMarketIds = (markets) => {
+        let mutated = false;
+        markets.forEach(m => {
+            if (!m.id) {
+                m.id = `mkt-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                mutated = true;
+            }
+        });
+        return { markets, mutated };
+    };
+
+    const ensureDefaultMarkets = () => {
+        let markets = getFromLocalStorage(MARKETS_KEY);
+        if (!markets.length) {
+            markets = defaultMarkets.map(m => ({ ...m, id: `mkt-${Date.now()}-${Math.random().toString(16).slice(2)}` }));
+            localStorage.setItem(MARKETS_KEY, JSON.stringify(markets));
+            return markets;
+        }
+        const { markets: withIds, mutated } = ensureMarketIds(markets);
+        if (mutated) localStorage.setItem(MARKETS_KEY, JSON.stringify(withIds));
+        return withIds;
+    };
+
+    const saveMarkets = (markets) => {
+        const { markets: withIds } = ensureMarketIds(markets);
+        localStorage.setItem(MARKETS_KEY, JSON.stringify(withIds));
+        return withIds;
+    };
+
+    const getMarkets = () => ensureDefaultMarkets();
+
+    const upsertMarket = (name, logo, id = null) => {
+        if (!name) return getMarkets();
+        const markets = getMarkets();
+        let target = null;
+        if (id) {
+            target = markets.find(m => m.id === id);
+        }
+        if (!target) {
+            target = markets.find(m => m.name.toLowerCase() === name.toLowerCase());
+        }
+        if (target) {
+            target.name = name;
+            target.logo = logo || target.logo || '';
+        } else {
+            markets.push({ id: `mkt-${Date.now()}-${Math.random().toString(16).slice(2)}`, name, logo: logo || '' });
+        }
+        return saveMarkets(markets);
+    };
+
+    const deleteMarketById = (id) => {
+        if (!id) return getMarkets();
+        let markets = getMarkets();
+        // Protege "Outro" para manter fluxo de custom
+        const target = markets.find(m => m.id === id);
+        if (target && target.name === 'Outro') return markets;
+        markets = markets.filter(m => m.id !== id);
+        return saveMarkets(markets);
+    };
+
+    const syncMarketsFromProducts = () => {
         const products = getFromLocalStorage('products');
+        let markets = getMarkets();
+        let mutated = false;
+        products.forEach(p => {
+            if (p.market && !markets.some(m => m.name.toLowerCase() === p.market.toLowerCase())) {
+                markets.push({ id: `mkt-${Date.now()}-${Math.random().toString(16).slice(2)}`, name: p.market, logo: '' });
+                mutated = true;
+            }
+        });
+        if (mutated) markets = saveMarkets(markets);
+        return markets;
+    };
+
+    const renderMarketsList = () => {
+        const listEl = document.getElementById('markets-list');
+        const emptyEl = document.getElementById('no-markets');
+        if (!listEl) return;
+        const markets = getMarkets();
+        listEl.innerHTML = '';
+        if (!markets.length) {
+            if (emptyEl) emptyEl.style.display = 'block';
+            return;
+        }
+        if (emptyEl) emptyEl.style.display = 'none';
+        markets.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'market-card';
+            card.innerHTML = `
+                <div class="market-card-header">
+                    <img class="market-logo" src="${m.logo || 'https://via.placeholder.com/80x80?text=Logo'}" alt="Logo ${m.name}">
+                    <div style="font-weight:600;">${m.name}</div>
+                </div>
+                <div class="market-card-actions">
+                    <button class="btn-small" data-action="edit-market" data-id="${m.id}"><i class="fas fa-edit"></i> Editar</button>
+                    <button class="btn-small btn-danger" data-action="delete-market" data-id="${m.id}"><i class="fas fa-trash"></i> Remover</button>
+                </div>
+            `;
+            listEl.appendChild(card);
+        });
+    };
+
+    // Eventos do formulário de mercados
+    if (marketForm) {
+        marketForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = marketNameInput?.value.trim();
+            const logo = marketLogoInput?.value.trim();
+            const editId = marketIdInput?.value || null;
+            if (!name) {
+                alert('Informe o nome do mercado.');
+                return;
+            }
+            upsertMarket(name, logo, editId);
+            refreshMarketsUI();
+            if (marketNameInput) marketNameInput.value = '';
+            if (marketLogoInput) marketLogoInput.value = '';
+            if (marketIdInput) marketIdInput.value = '';
+            if (cancelEditMarketBtn) cancelEditMarketBtn.style.display = 'none';
+            const saveBtn = document.getElementById('save-market-btn');
+            if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Mercado';
+            alert('Mercado salvo com sucesso!');
+        });
+    }
+
+    if (cancelEditMarketBtn) {
+        cancelEditMarketBtn.addEventListener('click', () => {
+            if (marketNameInput) marketNameInput.value = '';
+            if (marketLogoInput) marketLogoInput.value = '';
+            if (marketIdInput) marketIdInput.value = '';
+            cancelEditMarketBtn.style.display = 'none';
+            const saveBtn = document.getElementById('save-market-btn');
+            if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Mercado';
+        });
+    }
+
+    // Remoção de mercado
+    document.getElementById('markets-list')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="delete-market"]');
+        if (!btn) return;
+        const id = btn.dataset.id;
+        const markets = getMarkets();
+        const target = markets.find(m => m.id === id);
+        if (target && target.name === 'Outro') {
+            alert('O mercado "Outro" não pode ser removido.');
+            return;
+        }
+        if (confirm('Remover este mercado?')) {
+            deleteMarketById(id);
+            refreshMarketsUI();
+        }
+    });
+
+    // Edição de mercado
+    document.getElementById('markets-list')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="edit-market"]');
+        if (!btn) return;
+        const id = btn.dataset.id;
+        const markets = getMarkets();
+        const target = markets.find(m => m.id === id);
+        if (!target) return;
+        if (marketNameInput) marketNameInput.value = target.name;
+        if (marketLogoInput) marketLogoInput.value = target.logo || '';
+        if (marketIdInput) marketIdInput.value = target.id;
+        if (cancelEditMarketBtn) cancelEditMarketBtn.style.display = 'inline-block';
+        const saveBtn = document.getElementById('save-market-btn');
+        if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Mercado';
+        marketNameInput?.focus();
+    });
+
+    const renderMarketSelect = () => {
+        const select = document.getElementById('product-market');
+        if (!select) return;
+        const currentValue = select.value;
+        const markets = getMarkets();
+        select.innerHTML = '<option value="">Selecione um Mercado</option>' + markets
+            .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+            .map(m => `<option value="${m.name}">${m.name}</option>`)
+            .join('');
+        // Mantém seleção se existir
+        if (currentValue) {
+            const optionExists = markets.some(m => m.name === currentValue);
+            if (!optionExists && currentValue !== 'Outro') {
+                select.insertAdjacentHTML('beforeend', `<option value="${currentValue}">${currentValue}</option>`);
+            }
+            select.value = currentValue;
+        }
+    };
+
+    const refreshMarketsUI = () => {
+        renderMarketsList();
+        renderMarketSelect();
+        updateFilterOptions();
+    };
+
+    const updateCounts = () => {
+        const products = getActiveProducts();
         const suggestions = getFromLocalStorage('suggestions');
         productsCountBadge.textContent = products.length;
         suggestionsCountBadge.textContent = suggestions.length;
@@ -3095,15 +3364,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
             
+            const filtered = filterOutDeleted(firebaseProducts);
             // Salvar produtos do Firebase no localStorage e renderizar
-            if (firebaseProducts.length > 0) {
-                saveToLocalStorage('products', firebaseProducts);
-                console.log(`${firebaseProducts.length} produtos carregados do Firebase`);
-                return firebaseProducts;
-            } else {
-                console.log('Nenhum produto encontrado no Firebase');
-                return [];
-            }
+            saveToLocalStorage('products', filtered);
+            console.log(`${filtered.length} produtos carregados do Firebase (após filtro de deletados)`);
+            return filtered;
         } catch (error) {
             console.error('Erro ao carregar produtos do Firebase:', error);
             alert('Erro ao carregar produtos do Firebase: ' + error.message);
@@ -3361,32 +3626,141 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Funções de Renderização
-    const renderProducts = (productsToRender = getFromLocalStorage('products')) => {
-        productsTableBody.innerHTML = '';
-        if (productsToRender.length === 0) {
-            document.getElementById('no-products').style.display = 'block';
-            return;
-        }
-        document.getElementById('no-products').style.display = 'none';
-        
-        productsToRender.forEach(product => {
-            const row = document.createElement('tr');
-            row.dataset.id = product.id;
-            row.innerHTML = `
-                <td data-label="Nome">${product.name || 'Sem nome'}</td>
-                <td data-label="Código de Barras">${product.barcode || 'Sem código'}</td>
-                <td data-label="Mercado">${product.market || 'Sem mercado'}</td>
-                <td data-label="Preço">€ ${product.price || '0.00'}</td>
-                <td data-label="Unidade">${product.quantity || '1'} ${product.unit || 'unidade'}</td>
-                <td data-label="Marca">${product.brand || 'Sem marca'}</td>
-                <td data-label="Zona">${product.zone || 'Sem zona'}</td>
-                <td data-label="Ações">
-                    <button class="btn-action btn-edit" data-id="${product.id}"><i class="fas fa-edit"></i></button>
-                    <button class="btn-action btn-delete" data-id="${product.id}"><i class="fas fa-trash-alt"></i></button>
-                </td>
-            `;
-            productsTableBody.appendChild(row);
+    // Estado de listagem
+    const productsViewState = {
+        sortField: 'name',
+        sortDir: 'asc',
+        page: 1,
+        pageSize: 10,
+        lastList: []
+    };
+
+    const ensureProductIds = () => {
+        const products = getFromLocalStorage('products');
+        let mutated = false;
+        products.forEach((p) => {
+            if (!p.id && !p.localId) {
+                p.localId = `local-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                mutated = true;
+            }
         });
+        if (mutated) saveToLocalStorage('products', products);
+        return products;
+    };
+
+    const getProductId = (p) => p.id || p.localId || '';
+
+    const getDeletedProductIds = () => {
+        try {
+            return new Set(JSON.parse(localStorage.getItem('products_deleted_ids')) || []);
+        } catch (_) {
+            return new Set();
+        }
+    };
+
+    const addDeletedProductId = (id) => {
+        if (!id) return;
+        try {
+            const set = getDeletedProductIds();
+            set.add(id);
+            localStorage.setItem('products_deleted_ids', JSON.stringify([...set]));
+        } catch (_) {}
+    };
+
+    const filterOutDeleted = (list) => {
+        const deleted = getDeletedProductIds();
+        if (!deleted.size) return list;
+        return list.filter(p => !deleted.has(getProductId(p)));
+    };
+
+    const getActiveProducts = () => filterOutDeleted(ensureProductIds());
+
+    const sortProducts = (list) => {
+        const { sortField, sortDir } = productsViewState;
+        if (!sortField) return list;
+        const sorted = [...list].sort((a, b) => {
+            const dir = sortDir === 'desc' ? -1 : 1;
+            const valA = a[sortField];
+            const valB = b[sortField];
+
+            // Números (preço, quantidade) e strings
+            if (sortField === 'price' || sortField === 'quantity') {
+                const numA = parseFloat(valA) || 0;
+                const numB = parseFloat(valB) || 0;
+                return (numA - numB) * dir;
+            }
+
+            const strA = (valA || '').toString().toLowerCase();
+            const strB = (valB || '').toString().toLowerCase();
+            if (strA < strB) return -1 * dir;
+            if (strA > strB) return 1 * dir;
+            return 0;
+        });
+        return sorted;
+    };
+
+    const updateSortIcons = () => {
+        document.querySelectorAll('#products-table th[data-sort]').forEach(th => {
+            const icon = th.querySelector('i');
+            if (!icon) return;
+            const field = th.dataset.sort;
+            if (field === productsViewState.sortField) {
+                icon.className = productsViewState.sortDir === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+            } else {
+                icon.className = 'fas fa-sort';
+            }
+        });
+    };
+
+    const renderProducts = (productsToRender = ensureProductIds()) => {
+        const baseList = filterOutDeleted(productsToRender);
+        productsViewState.lastList = baseList;
+        const sorted = sortProducts(baseList);
+        const total = sorted.length;
+        const totalPages = Math.max(1, Math.ceil(total / productsViewState.pageSize));
+        if (productsViewState.page > totalPages) productsViewState.page = totalPages;
+        const start = (productsViewState.page - 1) * productsViewState.pageSize;
+        const pageItems = sorted.slice(start, start + productsViewState.pageSize);
+
+        productsTableBody.innerHTML = '';
+        if (pageItems.length === 0) {
+            document.getElementById('no-products').style.display = 'block';
+        } else {
+            document.getElementById('no-products').style.display = 'none';
+            pageItems.forEach(product => {
+                const pid = getProductId(product);
+                const row = document.createElement('tr');
+                row.dataset.id = pid;
+                row.innerHTML = `
+                    <td data-label="Nome">${product.name || 'Sem nome'}</td>
+                    <td data-label="Código de Barras">${product.barcode || 'Sem código'}</td>
+                    <td data-label="Mercado">${product.market || 'Sem mercado'}</td>
+                    <td data-label="Preço">€ ${product.price || '0.00'}</td>
+                    <td data-label="Unidade">${product.quantity || '1'} ${product.unit || 'unidade'}</td>
+                    <td data-label="Marca">${product.brand || 'Sem marca'}</td>
+                    <td data-label="Zona">${product.zone || 'Sem zona'}</td>
+                    <td data-label="Ações">
+                        <button class="btn-action btn-edit" data-id="${pid}"><i class="fas fa-edit"></i></button>
+                        <button class="btn-action btn-delete" data-id="${pid}"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                `;
+                productsTableBody.appendChild(row);
+            });
+        }
+
+        // Paginação
+        const pagination = document.getElementById('products-pagination');
+        const pageInfo = document.getElementById('products-page-info');
+        const prevBtn = document.getElementById('products-prev-page');
+        const nextBtn = document.getElementById('products-next-page');
+        if (pagination && pageInfo && prevBtn && nextBtn) {
+            pagination.style.display = total > productsViewState.pageSize ? 'flex' : (total === 0 ? 'none' : 'flex');
+            pageInfo.textContent = `Página ${productsViewState.page} de ${totalPages}`;
+            prevBtn.disabled = productsViewState.page <= 1;
+            nextBtn.disabled = productsViewState.page >= totalPages;
+        }
+
+        updateSortIcons();
     };
 
     // Função para inicializar os dados da aplicação
@@ -3394,6 +3768,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Carregar produtos do Firebase
             await loadProductsFromFirebase();
+            ensureProductIds();
+            syncMarketsFromProducts();
+            refreshMarketsUI();
             
             // Atualizar interface
             updateCounts();
@@ -3477,65 +3854,25 @@ document.addEventListener('DOMContentLoaded', () => {
             imageUrl
         };
 
+        // Garante que o mercado esteja cadastrado
+        if (market) {
+            upsertMarket(market, '');
+            refreshMarketsUI();
+        }
+
         // Log para debug
         console.log('🔍 DEBUG - ID do produto:', id);
         console.log('🔍 DEBUG - ID vazio?', id === '');
         console.log('🔍 DEBUG - Ação:', id ? 'ATUALIZAR' : 'CRIAR');
 
-        // Salva no Firestore
+        // Salva no Firestore com fallback local em caso de permissão
         (async () => {
-            try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const productsCollection = collection(db, `/artifacts/${appId}/public/data/products`);
-                
-                if (id && id !== '') {
-                    // ATUALIZAR produto existente
-                    console.log('✏️ Atualizando produto com ID:', id);
-                    const docRef = doc(db, `/artifacts/${appId}/public/data/products`, id);
-                    await updateDoc(docRef, productData);
-                    
-                    // Atualizar localStorage
-                    const existingProducts = getFromLocalStorage('products');
-                    const index = existingProducts.findIndex(p => p.id === id);
-                    if (index !== -1) {
-                        existingProducts[index] = { ...productData, id };
-                        saveToLocalStorage('products', existingProducts);
-                    }
-                    
-                    console.log('✅ Produto atualizado com sucesso!');
-                    alert('Produto atualizado com sucesso!');
-                    
-                    // Voltar para aba de produtos após atualizar
-                    const viewProductsTab = document.querySelector('[data-tab="tab-view-products"]');
-                    if (viewProductsTab) {
-                        viewProductsTab.click();
-                        // Scroll para o produto atualizado após renderizar
-                        setTimeout(() => {
-                            const productCard = document.querySelector(`[data-id="${id}"]`);
-                            if (productCard) {
-                                productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                productCard.style.outline = '3px solid #2563eb';
-                                setTimeout(() => { productCard.style.outline = ''; }, 2000);
-                            }
-                        }, 100);
-                    }
-                } else {
-                    // CRIAR novo produto
-                    console.log('➕ Criando novo produto');
-                    const docRef = await addDoc(productsCollection, productData);
-                    
-                    // Adicionar o ID do documento ao produto
-                    productData.id = docRef.id;
-                    
-                    // Atualizar localStorage com o novo produto
-                    const existingProducts = getFromLocalStorage('products');
-                    existingProducts.push(productData);
-                    saveToLocalStorage('products', existingProducts);
-                    
-                    console.log('✅ Produto criado com sucesso! ID:', docRef.id);
-                    alert('Produto criado com sucesso!');
-                }
-                
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const productsCollection = collection(db, `/artifacts/${appId}/public/data/products`);
+            const productsLocal = getFromLocalStorage('products');
+            const doRenderAndReset = () => {
+                productsViewState.page = 1;
+                ensureProductIds();
                 renderProducts();
                 updateFilterOptions();
                 updateCounts();
@@ -3546,18 +3883,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 otherMarketGroup.style.display = 'none';
                 imageUrlGroup.style.display = 'none';
                 document.getElementById('product-quantity').value = 1;
-                
-                // Limpar campo de imagem e seus estilos após salvar
                 const imageInput = document.getElementById('product-image');
                 if (imageInput) {
                     imageInput.value = '';
                     imageInput.style.background = '';
                     imageInput.title = '';
                 }
+            };
+
+            try {
+                if (id && id !== '') {
+                    // ATUALIZAR produto existente
+                    console.log('✏️ Atualizando produto com ID:', id);
+                    const docRef = doc(db, `/artifacts/${appId}/public/data/products`, id);
+                    await updateDoc(docRef, productData);
+
+                    const index = productsLocal.findIndex(p => p.id === id);
+                    if (index !== -1) {
+                        productsLocal[index] = { ...productData, id };
+                        saveToLocalStorage('products', productsLocal);
+                    }
+                    console.log('✅ Produto atualizado com sucesso!');
+                    alert('Produto atualizado com sucesso!');
+                } else {
+                    // CRIAR novo produto
+                    console.log('➕ Criando novo produto');
+                    const docRef = await addDoc(productsCollection, productData);
+                    productData.id = docRef.id;
+                    productsLocal.push(productData);
+                    saveToLocalStorage('products', productsLocal);
+                    console.log('✅ Produto criado com sucesso! ID:', docRef.id);
+                    alert('Produto criado com sucesso!');
+                }
             } catch (error) {
                 console.error('❌ Erro detalhado:', error);
-                alert('Erro ao salvar produto: ' + error.message);
+                if (error?.code === 'permission-denied' || /Missing or insufficient permissions/i.test(error?.message || '')) {
+                    // Fallback local
+                    if (!id) {
+                        const localId = `local-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                        productsLocal.push({ ...productData, localId, pendingSync: true });
+                        saveToLocalStorage('products', productsLocal);
+                        alert('Sem permissão para salvar no servidor. Produto salvo localmente.');
+                    } else {
+                        const idx = productsLocal.findIndex(p => p.id === id || p.localId === id);
+                        if (idx !== -1) {
+                            productsLocal[idx] = { ...productsLocal[idx], ...productData, pendingSync: true };
+                            saveToLocalStorage('products', productsLocal);
+                            alert('Sem permissão para salvar no servidor. Alterações salvas localmente.');
+                        } else {
+                            alert('Sem permissão para salvar no servidor e produto não encontrado localmente.');
+                        }
+                    }
+                } else {
+                    alert('Erro ao salvar produto: ' + (error.message || error));
+                    return;
+                }
             }
+
+            doRenderAndReset();
         })();
     });
 
@@ -3622,7 +4005,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Lógica da tabela e filtros
     const filterProducts = () => {
-        const products = getFromLocalStorage('products');
+    const products = getActiveProducts();
         const searchTerm = productSearchInput.value.toLowerCase();
         const marketFilter = productMarketFilter.value;
         const brandFilter = productBrandFilter.value;
@@ -3636,6 +4019,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return nameMatch && marketMatch && brandMatch && categoryMatch;
         });
 
+        productsViewState.page = 1;
         renderProducts(filteredProducts);
     };
 
@@ -3644,8 +4028,43 @@ document.addEventListener('DOMContentLoaded', () => {
     productBrandFilter.addEventListener('change', filterProducts);
     productCategoryFilter.addEventListener('change', filterProducts);
 
+    // Ordenação pelo cabeçalho
+    document.querySelectorAll('#products-table th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const field = th.dataset.sort;
+            if (productsViewState.sortField === field) {
+                productsViewState.sortDir = productsViewState.sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                productsViewState.sortField = field;
+                productsViewState.sortDir = 'asc';
+            }
+            productsViewState.page = 1;
+            renderProducts(productsViewState.lastList.length ? productsViewState.lastList : getActiveProducts());
+        });
+    });
+
+    // Paginação
+    const prevBtn = document.getElementById('products-prev-page');
+    const nextBtn = document.getElementById('products-next-page');
+    if (prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (productsViewState.page > 1) {
+                productsViewState.page -= 1;
+                renderProducts(productsViewState.lastList.length ? productsViewState.lastList : getActiveProducts());
+            }
+        });
+        nextBtn.addEventListener('click', () => {
+            const total = (productsViewState.lastList.length ? productsViewState.lastList : getActiveProducts()).length;
+            const totalPages = Math.max(1, Math.ceil(total / productsViewState.pageSize));
+            if (productsViewState.page < totalPages) {
+                productsViewState.page += 1;
+                renderProducts(productsViewState.lastList.length ? productsViewState.lastList : getActiveProducts());
+            }
+        });
+    }
+
     const updateFilterOptions = () => {
-        const products = getFromLocalStorage('products');
+    const products = getActiveProducts();
         const uniqueMarkets = [...new Set(products.map(p => p.market))].sort();
         const uniqueBrands = [...new Set(products.map(p => p.brand))].sort();
 
@@ -3679,10 +4098,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (button.dataset.tab === 'tab-view-products') {
                 // Carregar produtos do Firebase sempre que a aba for aberta
                 loadProductsFromFirebase().then(() => {
+                    ensureProductIds();
+                    syncMarketsFromProducts();
+                    refreshMarketsUI();
+                    productsViewState.page = 1;
                     renderProducts();
                     updateCounts();
                     updateFilterOptions();
                 });
+            } else if (button.dataset.tab === 'tab-markets') {
+                syncMarketsFromProducts();
+                refreshMarketsUI();
             } else if (button.dataset.tab === 'tab-suggestions') {
                 renderSuggestions();
             }
@@ -3700,19 +4126,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 (async () => {
                     try {
                         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                        // Apagar do Firestore
+                        // Sempre remover localmente pelo id ou localId
+                        let products = getFromLocalStorage('products');
+                        const before = products.length;
+                        products = products.filter(p => getProductId(p) != productId);
+                        const removed = before !== products.length;
+                        saveToLocalStorage('products', products);
+
+                        if (productId) addDeletedProductId(productId);
+
+                        // Tentar remover no Firestore, mas não bloquear UI
                         if (productId) {
-                            const docRef = doc(db, `/artifacts/${appId}/public/data/products`, productId);
-                            await deleteDoc(docRef);
+                            try {
+                                const docRef = doc(db, `/artifacts/${appId}/public/data/products`, productId);
+                                await deleteDoc(docRef);
+                            } catch (err) {
+                                console.warn('Não foi possível remover do Firestore, removido apenas localmente:', err);
+                            }
                         }
 
-                        // Atualizar localStorage e UI
-                        let products = getFromLocalStorage('products');
-                        products = products.filter(p => p.id != productId);
-                        saveToLocalStorage('products', products);
+                        productsViewState.page = 1;
                         renderProducts();
                         updateCounts();
-                        alert('Produto deletado com sucesso!');
+                        if (removed) {
+                            alert('Produto deletado com sucesso!');
+                        } else {
+                            alert('Produto removido localmente. Se persistir, atualize a lista.');
+                        }
                     } catch (error) {
                         console.error('Erro ao deletar produto:', error);
                         alert('Erro ao deletar produto: ' + (error.message || error));
@@ -3745,14 +4185,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('product-name').value = product.name;
                 document.getElementById('product-price').value = product.price;
                 
-                // Trata o mercado
-                if (['Continente', 'Pingo Doce', 'Lidl', 'Makro', 'Recheio', 'Aldi', 'Auchan', 'Minipreço', 'Mercadona'].includes(product.market)) {
-                    productMarket.value = product.market;
-                    otherMarketGroup.style.display = 'none';
+                // Trata o mercado (garante que exista na lista)
+                if (product.market) {
+                    upsertMarket(product.market, '');
+                    refreshMarketsUI();
+                    if (productMarket.querySelector(`option[value="${product.market}"]`)) {
+                        productMarket.value = product.market;
+                        otherMarketGroup.style.display = 'none';
+                        otherMarketGroup.value = '';
+                    } else {
+                        productMarket.value = 'Outro';
+                        otherMarketGroup.style.display = 'block';
+                        otherMarketGroup.value = product.market;
+                    }
                 } else {
-                    productMarket.value = 'Outro';
-                    otherMarketGroup.style.display = 'block';
-                    otherMarketGroup.value = product.market;
+                    productMarket.value = '';
+                    otherMarketGroup.style.display = 'none';
+                    otherMarketGroup.value = '';
                 }
 
                 document.getElementById('product-unit').value = product.unit;

@@ -35,6 +35,9 @@
                         <button id="test-serpapi-key" title="Testar chave" style="white-space:nowrap; background:#2563eb; color:#fff; border:none; border-radius:6px; padding:6px 10px; font-size:13px; cursor:pointer;">
                             <i class="fas fa-vial"></i> Testar
                         </button>
+                        <button id="delete-serpapi-key" title="Remover chave salva" style="white-space:nowrap; background:#dc2626; color:#fff; border:none; border-radius:6px; padding:6px 10px; font-size:13px; cursor:pointer;">
+                            <i class="fas fa-trash"></i> Remover
+                        </button>
                     </div>
                     <div id="serpapi-key-status" style="font-size:12px; color:#16a34a; margin-top:4px; display:none;">Chave salva!</div>
                 </div>
@@ -129,6 +132,9 @@
                     <i class="fas fa-list-alt"></i> Produtos Cadastrados
                     <span id="products-count" class="badge">0</span>
                 </button>
+                <button class="tab-button" data-tab="tab-markets">
+                    <i class="fas fa-store"></i> Mercados
+                </button>
                 <button class="tab-button" data-tab="tab-suggestions">
                     <i class="fas fa-check-double"></i> Sugestões
                     <span id="suggestions-count" class="badge">0</span>
@@ -171,16 +177,6 @@
                             <label for="product-market">Mercado:</label>
                             <select id="product-market">
                                 <option value="">Selecione um Mercado</option>
-                                <option value="Continente">Continente</option>
-                                <option value="Pingo Doce">Pingo Doce</option>
-                                <option value="Lidl">Lidl</option>
-                                <option value="Makro">Makro</option>
-                                <option value="Recheio">Recheio</option>
-                                <option value="Aldi">Aldi</option>
-                                <option value="Auchan">Auchan</option>
-                                <option value="Minipreço">Minipreço</option>
-                                <option value="Mercadona">Mercadona</option>
-                                <option value="Outro">Outro</option>
                             </select>
                             <input type="text" id="custom-market-name" placeholder="Digite o nome do mercado" style="display: none;">
                         </div>
@@ -332,6 +328,11 @@
                             <tbody id="products-table-body"></tbody>
                         </table>
                     </div>
+                    <div class="products-pagination" id="products-pagination" style="display:none;">
+                        <button id="products-prev-page" class="btn-page">« Anterior</button>
+                        <span id="products-page-info">Página 1 de 1</span>
+                        <button id="products-next-page" class="btn-page">Próxima »</button>
+                    </div>
                     <p id="no-products" class="no-suggestions" style="display: none;">Não há produtos cadastrados.</p>
                 </section>
             </div>
@@ -341,6 +342,34 @@
                     <h2><i class="fas fa-check-double"></i> Sugestões de Preço Pendentes</h2>
                     <div id="suggestions-list" class="suggestions-list"></div>
                     <p id="no-suggestions" class="no-suggestions" style="display: none;">Não há sugestões de preço pendentes no momento.</p>
+                </section>
+            </div>
+
+            <div id="tab-markets" class="tab-content" style="display:none;">
+                <section class="admin-section">
+                    <h2><i class="fas fa-store"></i> Mercados e Logos</h2>
+                    <form id="market-form" class="admin-form">
+                        <input type="hidden" id="market-id">
+                        <div class="form-group">
+                            <label for="market-name">Nome do Mercado:</label>
+                            <input type="text" id="market-name" placeholder="Ex.: Continente" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="market-logo">Logo (URL da Imagem):</label>
+                            <input type="url" id="market-logo" placeholder="https://..." required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit" id="save-market-btn">
+                                <i class="fas fa-save"></i> Salvar Mercado
+                            </button>
+                            <button type="button" class="btn-delete" id="cancel-edit-market-btn" style="display:none;">
+                                <i class="fas fa-times"></i> Cancelar edição
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="markets-list" id="markets-list"></div>
+                    <p id="no-markets" class="no-suggestions" style="display:none;">Nenhum mercado cadastrado ainda.</p>
                 </section>
             </div>
         </main>
