@@ -867,7 +867,11 @@
                             } catch(_) {}
                         });
                     }).finally(() => {
-                        navigator.serviceWorker.register('./service-worker.js?v=20251224-pathscope4')
+                        // GitHub Pages roda em /<repo>/ (ex: /precojusto/). Use basePath explícito
+                        // para registrar no escopo correto e evitar travas por cache/SW antigo.
+                        const basePath = location.pathname.replace(/[^/]+$/, '');
+                        const swUrl = new URL('service-worker.js?v=20260102-v15', location.origin + basePath).toString();
+                        navigator.serviceWorker.register(swUrl, { scope: basePath })
                             .then(reg => {
                                 console.log('SW registrado (index):', reg.scope);
                                 if (reg.waiting) { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
